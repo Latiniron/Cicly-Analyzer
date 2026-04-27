@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathematical Market Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060d1a;--bg2:#0b1526;--bg3:#0f1d32;
+  --border:#16202f;--border2:rgba(167,139,250,.2);
+  --text:#e0eeff;--text2:#8ba4c0;--muted:#3a5170;
+  --purple:#a78bfa;--green:#22d3a5;--red:#ff5d6c;
+  --btc:#f7931a;--xrp:#00aae4;--sol:#9945ff;
+  --xlm:#14b8a6;--hbar:#ec4899;--sp:#22c55e;
+  --xdc:#3b82f6;--algo:#f97316;--qnt:#f59e0b;--oil:#94a3b8;
+  --gold:#f5c542;--silver:#c0c0c0;
+  --bb:#f59e0b;--re:#ef4444;--cd:#60a5fa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+#toasts{position:fixed;top:14px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;max-width:300px;pointer-events:all;animation:tin .3s ease;display:flex;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+@keyframes tin{from{opacity:0;transform:translateX(28px)}to{opacity:1}}
+@keyframes tout{to{opacity:0;transform:translateX(28px)}}
+.t-ico{font-size:15px}.t-src{font-size:7px;font-weight:900;letter-spacing:1.5px;opacity:.7;margin-bottom:2px}.t-msg{font-size:9px;color:var(--text2);line-height:1.4}
+
+.hdr{background:rgba(11,21,38,.96);border-bottom:1px solid var(--border);padding:13px 18px;position:sticky;top:0;z-index:200;backdrop-filter:blur(16px)}
+.hdr-in{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;line-height:1.1}
+.brand .pi{color:var(--purple);font-size:22px}
+.brand-sub{font-size:8px;color:var(--muted);margin-top:4px;letter-spacing:.5px}
+.hdr-r{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.langs{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end}
+.lb{font-size:9px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:.15s}
+.lb:hover{color:var(--text)}.lb.on{border-color:var(--purple);background:rgba(167,139,250,.12);color:var(--purple)}
+.live{display:flex;align-items:center;gap:8px;font-size:8px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.8s infinite;box-shadow:0 0 6px var(--green);display:inline-block}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#clock{color:var(--muted)}
+
+.tkr{background:var(--bg3);border-bottom:1px solid var(--border);overflow:hidden;height:29px;display:flex}
+.tkr-lbl{font-size:7px;font-weight:900;letter-spacing:2px;padding:0 13px;display:flex;align-items:center;border-right:1px solid var(--border);color:var(--bb);flex-shrink:0;white-space:nowrap}
+.tkr-s{flex:1;overflow:hidden}
+.tkr-i{display:flex;align-items:center;height:29px;animation:scroll 15s linear infinite;white-space:nowrap}
+.tkr-i:hover{animation-play-state:paused}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ti{font-size:9px;padding:0 22px;display:flex;align-items:center;gap:7px;color:var(--text2)}
+.ti-d{width:4px;height:4px;border-radius:50%}.ti-s{font-size:7px;font-weight:900;letter-spacing:1px}
+
+.nav-w{background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:56px;z-index:190}
+.nav-w::-webkit-scrollbar{display:none}
+.nav{display:flex;padding:8px 13px;gap:4px;min-width:max-content}
+.nt{font-size:10px;font-weight:600;padding:5px 13px;border-radius:18px;border:1px solid transparent;cursor:pointer;color:var(--muted);background:transparent;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:.15s}
+.nt:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nt.on{border-color:rgba(224,238,255,.2);background:rgba(224,238,255,.07);color:var(--text)}
+.nt.iso-t.on{border-color:rgba(34,211,165,.4);background:rgba(34,211,165,.08);color:var(--green)}
+.nt.news-t.on{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08);color:var(--bb)}
+.bdg{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:9px;font-size:7px;font-weight:900;min-width:15px;height:15px;padding:0 3px;margin-left:3px}
+
+.main{flex:1;padding:13px;max-width:960px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:12px;padding-bottom:36px}
+.sec{display:none;flex-direction:column;gap:12px}.sec.on{display:flex}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+.sec.on>.card{animation:fi .22s ease both}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 2px 20px rgba(0,0,0,.35)}
+.card.gg{border-color:rgba(34,211,165,.3);box-shadow:0 0 22px rgba(34,211,165,.25)}
+.card.gp{border-color:var(--border2);box-shadow:0 0 22px rgba(167,139,250,.14)}
+.card.gy{border-color:rgba(245,158,11,.25)}
+.ct{font-size:8px;letter-spacing:3px;font-weight:800;color:var(--purple);text-transform:uppercase;margin-bottom:13px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.g2{grid-template-columns:1fr}}
+
+.sig-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;flex-wrap:wrap;gap:7px}
+.sig-eye{font-size:8px;letter-spacing:2px;color:var(--purple);font-weight:800}
+.sig-sub{font-size:8px;color:var(--muted);margin-top:2px}
+.pills{display:flex;gap:8px;margin-bottom:14px}
+.pill{font-size:13px;font-weight:900;letter-spacing:2px;padding:7px 18px;border-radius:9px;border:2px solid transparent}
+.bull{background:rgba(34,211,165,.1);border-color:var(--green);color:var(--green);box-shadow:0 0 18px rgba(34,211,165,.3)}
+.bear{background:transparent;border-color:rgba(255,93,108,.1);color:var(--red);opacity:.3}
+.bar-w{margin-bottom:9px}.bl{display:flex;justify-content:space-between;margin-bottom:4px;font-size:8px}
+.bk{color:var(--muted)}.bv{color:var(--green);font-weight:700}
+.bb2{height:6px;background:rgba(61,85,112,.2);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px;transition:width 1.2s}
+.bf.g{background:var(--green);box-shadow:0 0 8px rgba(34,211,165,.45)}.bf.r{background:var(--red)}
+.bh{display:flex;justify-content:space-between;margin-top:2px;font-size:7px;color:var(--muted)}
+
+.bkr{margin-bottom:10px}.bkh{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.bkn{font-size:9px;color:var(--text)}.bkg{display:flex;gap:4px;align-items:center}
+.bkb{font-size:7px;font-weight:800;padding:1px 5px;border-radius:4px}.bkp{font-size:7px;color:var(--muted)}
+.bkd{font-size:8px;color:var(--muted);line-height:1.5;margin-top:2px}
+.upd{border-top:1px solid var(--border);margin-top:10px;padding-top:8px;font-size:7px;color:var(--muted);display:flex;align-items:center;gap:6px}
+
+.pl{display:flex;flex-direction:column}
+.pr{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.pr:last-child{border-bottom:none}
+.ps{font-size:11px;color:var(--muted)}.prr{display:flex;align-items:center;gap:8px}
+.pv{font-size:14px;font-weight:700}
+.pc{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px}
+.up{background:rgba(34,211,165,.1);color:var(--green)}.dn{background:rgba(255,93,108,.1);color:var(--red)}
+.spk{display:flex;align-items:center;gap:1px}.sb{width:3px;border-radius:1px}
+
+.tf-row{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.tf-btn{font-size:8px;font-weight:700;padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:.15s}
+.tf-btn:hover{color:var(--text)}
+.tf-btn.on{border-color:var(--purple);background:rgba(167,139,250,.12);color:var(--purple)}
+
+.ssvg{width:100%;overflow:visible;display:block;margin-bottom:8px}
+.slab{display:flex;justify-content:space-between;font-size:8px;color:var(--muted);padding:0 4px;margin-bottom:6px}
+.leg{display:flex;gap:13px;flex-wrap:wrap;margin-top:8px}
+.li{display:flex;align-items:center;gap:5px;font-size:8px;color:var(--muted)}.ld{width:7px;height:7px;border-radius:50%}
+
+.dc{display:flex;align-items:flex-end;justify-content:space-around;gap:10px;height:108px;padding:0 6px;margin-bottom:10px}
+.dg{display:flex;flex-direction:column;align-items:center;gap:4px}
+.dbs{display:flex;gap:3px;align-items:flex-end}.db{width:10px;border-radius:3px 3px 0 0;min-height:2px}.dl{font-size:8px;color:var(--muted)}
+
+.sl{display:flex;flex-direction:column;gap:7px}
+.sr{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px}
+.st{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.sy{font-size:12px;font-weight:700}.sp2{font-size:8px;color:var(--muted)}
+.sbar{display:flex;gap:3px;height:7px;border-radius:4px;overflow:hidden;margin:4px 0}.ss{border-radius:3px}
+
+.wl{display:flex;flex-direction:column}
+.wr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}.wr:last-child{border-bottom:none}
+.ws{font-size:10px;color:var(--muted)}.wv{font-size:11px;font-weight:700}
+
+.zg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.zc{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.zs{font-size:11px;font-weight:800}.zl{font-size:8px;color:var(--text2)}.zi{font-size:8px;color:var(--red)}
+
+.igr{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:10px}
+.ic{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:7px;position:relative;overflow:hidden;transition:.2s}
+.ic:hover{border-color:rgba(34,211,165,.35);transform:translateY(-2px)}
+.is{position:absolute;top:0;left:0;right:0;height:2px}
+.ib{font-size:7px;font-weight:800;letter-spacing:1.5px;padding:2px 7px;border-radius:4px;background:rgba(34,211,165,.1);color:var(--green);border:1px solid rgba(34,211,165,.25);width:fit-content}
+.isc{font-size:18px;font-weight:900}.in{font-size:9px;color:var(--text2);line-height:1.4}
+.ip{font-size:12px;font-weight:700}.iu{font-size:8px;color:var(--muted);line-height:1.55;border-top:1px solid var(--border);padding-top:7px;margin-top:3px}
+
+.icmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ibox{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px}
+.ibt{font-size:7px;font-weight:800;letter-spacing:1.5px;margin-bottom:9px}.ibl{font-size:8px;color:var(--muted);line-height:2}
+
+.ntb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
+.nc{font-size:8px;font-weight:800;letter-spacing:1px;padding:4px 11px;border-radius:18px;border:1px solid var(--border);cursor:pointer;color:var(--muted);font-family:'JetBrains Mono',monospace;background:transparent;transition:.15s}
+.nc:hover{color:var(--text)}
+.nc.a-all{border-color:var(--purple);color:var(--purple);background:rgba(167,139,250,.1)}
+.nc.a-bb{border-color:var(--bb);color:var(--bb);background:rgba(245,158,11,.1)}
+.nc.a-re{border-color:var(--re);color:var(--re);background:rgba(239,68,68,.1)}
+.nc.a-cd{border-color:var(--cd);color:var(--cd);background:rgba(96,165,250,.1)}
+.nc.a-tag{border-color:var(--green);color:var(--green);background:rgba(34,211,165,.1)}
+.nl{display:flex;flex-direction:column;gap:10px}
+.ni{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:14px;transition:.15s}
+.ni:hover{border-color:rgba(255,255,255,.09)}
+.nm{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+.nsrc{font-size:7px;font-weight:900;letter-spacing:1.5px;padding:2px 8px;border-radius:4px}
+.s-bb{background:rgba(245,158,11,.15);color:var(--bb);border:1px solid rgba(245,158,11,.28)}
+.s-re{background:rgba(239,68,68,.15);color:var(--re);border:1px solid rgba(239,68,68,.28)}
+.s-cd{background:rgba(96,165,250,.15);color:var(--cd);border:1px solid rgba(96,165,250,.28)}
+.ntag{font-size:7px;padding:2px 7px;border-radius:4px;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.18)}
+.ntime{font-size:7px;color:var(--muted);margin-left:auto}
+.nh{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);line-height:1.45;margin-bottom:5px}
+.nsum{font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:7px}
+.nft{display:flex;align-items:center;gap:8px}
+.nimp{font-size:7px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px}
+.ih{background:rgba(34,211,165,.12);color:var(--green)}.im{background:rgba(245,158,11,.12);color:var(--bb)}.il{background:rgba(61,85,112,.25);color:var(--muted)}
+
+.pfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:8px;margin-bottom:12px}
+.pfc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:5px;transition:.2s}
+.pfc:hover{border-color:rgba(167,139,250,.3)}
+.pfs{font-size:13px;font-weight:800}.pfa{font-size:9px;color:var(--muted)}
+.pfb{height:3px;background:rgba(61,85,112,.3);border-radius:2px;overflow:hidden;margin-top:4px}.pfbf{height:100%;border-radius:2px}
+
+.csg{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;margin-top:4px}
+.cs{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px}
+.csl{font-size:8px;color:var(--muted);margin-bottom:3px}.csv{font-size:13px;font-weight:700}
+.csr{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:6px}
+.stpill{font-size:8px;padding:3px 9px;border-radius:6px;border:1px solid var(--border);color:var(--text2)}
+.cpb{font-size:28px;font-weight:900;line-height:1;margin-top:4px}
+
+.hc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.ht{font-size:8px;font-weight:800;letter-spacing:2px;color:var(--purple);margin-bottom:8px}
+.htxt{font-size:10px;color:var(--text2);line-height:1.75}
+.hisl{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.hisr{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)}
+.hisy{font-size:10px;color:var(--text)}.hisr2{font-size:9px;font-weight:700;color:var(--green)}
+
+footer{text-align:center;font-size:8px;letter-spacing:1px;color:var(--muted);padding:13px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <div>
+      <div class="brand"><span class="pi">π</span><span data-i="hdr_title">Mathematical Market Analysis</span></div>
+      <div class="brand-sub" data-i="hdr_sub">BTC · XRP · SOL · XLM · HBAR · Gold · Silver · S&amp;P · Oil · ISO 20022</div>
+    </div>
+    <div class="hdr-r">
+      <div class="langs">
+        <button class="lb on" onclick="setLang('EN',this)">EN</button>
+        <button class="lb" onclick="setLang('DE',this)">DE</button>
+        <button class="lb" onclick="setLang('ES',this)">ES</button>
+        <button class="lb" onclick="setLang('ZH',this)">ZH</button>
+        <button class="lb" onclick="setLang('BR',this)">BR</button>
+        <button class="lb" onclick="setLang('RU',this)">RU</button>
+      </div>
+      <div class="live"><div style="display:flex;align-items:center;gap:5px"><div class="dot"></div><span data-i="live">LIVE</span></div><div id="clock">--:--:--</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="tkr"><div class="tkr-lbl">▶ ALERTS</div><div class="tkr-s"><div class="tkr-i" id="ticker"></div></div></div>
+
+<div class="nav-w">
+  <nav class="nav">
+    <button class="nt on" onclick="tab('dashboard',this)" data-i="nav_dash">Dashboard</button>
+    <button class="nt" onclick="tab('btc',this)">BTC</button>
+    <button class="nt" onclick="tab('xrp',this)">XRP</button>
+    <button class="nt" onclick="tab('sol',this)">SOL</button>
+    <button class="nt" onclick="tab('xlm',this)">XLM</button>
+    <button class="nt" onclick="tab('hbar',this)">HBAR</button>
+    <button class="nt" onclick="tab('sp',this)">S&amp;P 500</button>
+    <button class="nt" onclick="tab('oil',this)" data-i="nav_oil">🛢 Oil</button>
+    <button class="nt" onclick="tab('gold',this)" data-i="nav_gold">🥇 Gold</button>
+    <button class="nt" onclick="tab('silver',this)" data-i="nav_silver">🥈 Silver</button>
+    <button class="nt iso-t" onclick="tab('iso',this)" data-i="nav_iso">ISO 20022 ✓</button>
+    <button class="nt news-t" onclick="tab('news',this)"><span data-i="nav_news">📰 Alerts</span> <span class="bdg">12</span></button>
+    <button class="nt" onclick="tab('portfolio',this)" data-i="nav_pf">Portfolio</button>
+    <button class="nt" onclick="tab('waves',this)" data-i="nav_waves">📊 Wave Guide</button>
+    <button class="nt" onclick="tab('howto',this)" data-i="nav_how">How It Works</button>
+  </nav>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div id="sec-dashboard" class="sec on">
+  <!-- SIGNAL -->
+  <div class="card gg">
+    <div class="sig-top">
+      <div>
+        <div class="sig-eye" data-i="signal_title">π MARKET SIGNAL</div>
+        <div class="sig-sub" data-i="signal_sub">Weighted live calculation · Monthly candles</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px"><div class="dot"></div><span style="font-size:8px;color:var(--green)"><span data-i="live_sm">Live</span> · <span id="upd">--:--</span></span></div>
+    </div>
+    <div class="pills">
+      <div class="pill bull" data-i="bullish">BULLISH</div>
+      <div class="pill bear" data-i="bearish">BEARISH</div>
+    </div>
+    <div class="bar-w">
+      <div class="bl"><span class="bk" data-i="pi_score">Pi Score</span><span class="bv">58/100</span></div>
+      <div class="bb2"><div class="bf g" style="width:58%"></div></div>
+      <div class="bh"><span data-i="bearish">BEARISH</span><span data-i="bullish">BULLISH</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-size:8px;color:var(--muted)" data-i="confidence">Confidence</span>
+      <div style="display:flex;align-items:center;gap:8px"><div style="width:78px;height:3px;background:rgba(61,85,112,.2);border-radius:2px;overflow:hidden"><div style="width:16%;height:100%;background:var(--green);border-radius:2px"></div></div><span style="font-size:8px;color:var(--green);font-weight:700">16%</span></div>
+    </div>
+    <div class="ct" data-i="signal_breakdown">Signal Breakdown</div>
+    <div id="breakdown-area"></div>
+    <div class="upd"><div class="dot" style="width:4px;height:4px"></div><span><span data-i="autorefresh">Auto-refresh · Next update in</span> <span id="cd">30</span>s</span></div>
+  </div>
+
+  <!-- 1-MONTH CYCLE INDICATOR (no "Cycle" title - just timeframe + chart) -->
+  <div class="card gp">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div class="ct" style="margin-bottom:0" data-i="market_indicator">Market Position Indicator</div>
+      <div class="tf-row" style="margin-bottom:0">
+        <button class="tf-btn" onclick="setTF('1W',this)">1W</button>
+        <button class="tf-btn on" onclick="setTF('1M',this)">1M</button>
+        <button class="tf-btn" onclick="setTF('3M',this)">3M</button>
+        <button class="tf-btn" onclick="setTF('1Y',this)">1Y</button>
+        <button class="tf-btn" onclick="setTF('4Y',this)">4Y</button>
+      </div>
+    </div>
+    <div style="font-size:8px;color:var(--muted);margin-bottom:8px"><span data-i="tf_active">Active timeframe:</span> <span style="color:var(--purple);font-weight:700" id="tf-label" data-i="tf_1m">1 Month</span> · <span data-i="data_basis">Data basis: monthly candles</span></div>
+    <svg class="ssvg" id="sine" viewBox="0 0 320 130"></svg>
+    <div class="slab" id="phase-labels">
+      <span data-i="ph_bottom">Bottom</span><span data-i="ph_build">Build-up</span><span data-i="ph_ath">ATH</span><span data-i="ph_corr">Correction</span><span data-i="ph_bottom">Bottom</span>
+    </div>
+    <div class="leg">
+      <div class="li"><div class="ld" style="background:var(--btc)"></div>BTC</div>
+      <div class="li"><div class="ld" style="background:var(--xrp)"></div>XRP</div>
+      <div class="li"><div class="ld" style="background:var(--gold)"></div>Gold</div>
+      <div class="li"><div class="ld" style="background:var(--sp)"></div>S&amp;P</div>
+    </div>
+  </div>
+
+  <div class="card gg"><div class="ct" data-i="live_prices">Live Prices</div><div class="pl" id="prices"></div></div>
+
+  <div class="card">
+    <div class="ct" data-i="drawdown">Drawdown Comparison (%)</div>
+    <div class="dc" id="draw"></div>
+    <div class="leg"><div class="li"><div class="ld" style="background:var(--btc)"></div>BTC</div><div class="li"><div class="ld" style="background:var(--xrp)"></div>XRP</div><div class="li"><div class="ld" style="background:var(--sp)"></div>S&amp;P</div></div>
+  </div>
+
+  <div class="card gp"><div class="ct" data-i="monthly_struct">Monthly &amp; 4H Structure</div><div class="sl" id="struct"></div></div>
+
+  <div class="g2">
+    <div class="card gp"><div class="ct" data-i="elliott">Elliott Wave</div><div class="wl" id="wave"></div></div>
+    <div class="card gp"><div class="ct" data-i="zone_4h">4H Zone</div><div class="zg" id="zone"></div></div>
+  </div>
+</div>
+
+<!-- BTC -->
+<div id="sec-btc" class="sec">
+  <div class="card" style="border-color:rgba(247,147,26,.3)">
+    <div class="ct" style="color:var(--btc)">Bitcoin (BTC)</div>
+    <div style="font-size:10px;color:var(--muted)">BTC/USD</div>
+    <div class="cpb" style="color:var(--btc)">$78,259</div>
+    <div class="csr"><span class="pc up">+2.4%</span><span class="stpill">Vol 24h: $28.4B</span><span class="stpill">MCap: $1.54T</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--btc)">1–5 Complete</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$118k–$140k</div></div>
+    <div class="cs"><div class="csl" data-i="m_mid">Monthly Mid</div><div class="csv">$76,000</div></div>
+    <div class="cs"><div class="csl" data-i="m_floor">Monthly Floor</div><div class="csv">$68,000</div></div>
+    <div class="cs"><div class="csl">4H Impulse</div><div class="csv">72%</div></div>
+    <div class="cs"><div class="csl" data-i="invalid">Invalidation</div><div class="csv" style="color:var(--red)">$28k</div></div>
+  </div>
+  <div class="card" style="border-color:rgba(247,147,26,.25)">
+    <div class="ct" style="color:var(--btc)" data-i="btc_ma_title">MA Ratio Indicator (Monthly)</div>
+    <div class="bar-w" style="margin-bottom:0">
+      <div class="bl"><span class="bk">111-day MA vs 350×2 MA</span><span class="bv">51.4%</span></div>
+      <div class="bb2" style="height:8px"><div class="bf g" style="width:51.4%"></div></div>
+      <div class="bh"><span data-i="far_top">Far from top</span><span data-i="near_top">Near top</span></div>
+    </div>
+    <div style="font-size:9px;color:var(--muted);margin-top:10px;line-height:1.7" data-i="btc_ma_desc">The MA ratio is at 51.4% of the way to a cycle top crossover. Historically, when the 111-day MA crosses the 350×2 MA, a cycle peak follows. We are still far from that signal — bullish for the cycle.</div>
+  </div>
+</div>
+
+<!-- XRP -->
+<div id="sec-xrp" class="sec">
+  <div class="card" style="border-color:rgba(0,170,228,.3)">
+    <div class="ct" style="color:var(--xrp)">Ripple (XRP)</div>
+    <div style="font-size:10px;color:var(--muted)">XRP/USD</div>
+    <div class="cpb" style="color:var(--xrp)">$1.4400</div>
+    <div class="csr"><span class="pc up">+1.8%</span><span class="stpill">Vol 24h: $4.1B</span><span class="stpill">MCap: $81B</span><span style="font-size:7px;font-weight:800;padding:3px 8px;border-radius:4px;background:rgba(34,211,165,.1);color:var(--green);border:1px solid rgba(34,211,165,.25)">ISO 20022 ✓</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--xrp)">1–3 Developing</div></div>
+    <div class="cs"><div class="csl" data-i="wave_target">Wave Target</div><div class="csv" style="color:var(--green)">$2.62</div></div>
+    <div class="cs"><div class="csl" data-i="m_support">Monthly Support</div><div class="csv">$1.12</div></div>
+    <div class="cs"><div class="csl" data-i="m_resist">Monthly Resist.</div><div class="csv">$2.18</div></div>
+    <div class="cs"><div class="csl">4H Impulse</div><div class="csv">81%</div></div>
+    <div class="cs"><div class="csl" data-i="sec_status">SEC Status</div><div class="csv" style="color:var(--green);font-size:10px" data-i="settled">✓ Settled</div></div>
+  </div>
+  <div class="card" style="border-color:rgba(0,170,228,.25)">
+    <div class="ct" style="color:var(--xrp)" data-i="xrp_legal">SEC XRP Legal Status</div>
+    <div style="font-size:10px;color:var(--text2);line-height:1.75;margin-bottom:10px" data-i="xrp_legal_desc">The SEC vs. Ripple case was officially settled in 2024. A US federal judge ruled XRP is NOT a security when sold to retail investors. XRP can now be freely traded on US exchanges.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:var(--bg3);border:1px solid rgba(34,211,165,.2);border-radius:9px;padding:10px">
+        <div style="font-size:7px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:6px" data-i="result">RESULT</div>
+        <div style="font-size:9px;color:var(--text2);line-height:1.8" data-i="xrp_result_list">✓ Not a security (Retail)<br>✓ Settlement approved<br>✓ US exchanges reactivated<br>✓ Ripple ETF under review</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px">
+        <div style="font-size:7px;font-weight:800;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px">ISO 20022</div>
+        <div style="font-size:9px;color:var(--text2);line-height:1.8" data-i="xrp_iso_list">✓ Fully compliant<br>✓ 300+ bank partners<br>✓ ODL Network<br>✓ SWIFT integration</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SOL -->
+<div id="sec-sol" class="sec">
+  <div class="card" style="border-color:rgba(153,69,255,.3)">
+    <div class="ct" style="color:var(--sol)">Solana (SOL)</div>
+    <div class="cpb" style="color:var(--sol)">$86.13</div>
+    <div class="csr"><span class="pc dn">-0.9%</span><span class="stpill">MCap: $39B</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--sol)">Wave 3 Active</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$320</div></div>
+    <div class="cs"><div class="csl" data-i="support">Support</div><div class="csv">$110</div></div>
+    <div class="cs"><div class="csl" data-i="resist">Resistance</div><div class="csv">$210</div></div>
+    <div class="cs"><div class="csl">4H Impulse</div><div class="csv">85%</div></div>
+    <div class="cs"><div class="csl" data-i="invalid">Invalidation</div><div class="csv" style="color:var(--red)">33%</div></div>
+  </div>
+</div>
+
+<!-- XLM -->
+<div id="sec-xlm" class="sec">
+  <div class="card" style="border-color:rgba(20,184,166,.3)">
+    <div class="ct" style="color:var(--xlm)">Stellar (XLM)</div>
+    <div class="cpb" style="color:var(--xlm)">$0.1756</div>
+    <div class="csr"><span class="pc up">+0.5%</span><span class="stpill">MCap: $5.2B</span><span style="font-size:7px;font-weight:800;padding:3px 8px;border-radius:4px;background:rgba(34,211,165,.1);color:var(--green);border:1px solid rgba(34,211,165,.25)">ISO 20022 ✓</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--xlm)">Wave 2 Retrace</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$0.68</div></div>
+    <div class="cs"><div class="csl" data-i="support">Support</div><div class="csv">$0.18</div></div>
+    <div class="cs"><div class="csl" data-i="iso_status">ISO Status</div><div class="csv" style="color:var(--green);font-size:10px" data-i="certified">Certified</div></div>
+  </div>
+</div>
+
+<!-- HBAR -->
+<div id="sec-hbar" class="sec">
+  <div class="card" style="border-color:rgba(236,72,153,.3)">
+    <div class="ct" style="color:var(--hbar)">Hedera (HBAR)</div>
+    <div class="cpb" style="color:var(--hbar)">$0.0908</div>
+    <div class="csr"><span class="pc up">+1.2%</span><span class="stpill">MCap: $3.4B</span><span style="font-size:7px;font-weight:800;padding:3px 8px;border-radius:4px;background:rgba(34,211,165,.1);color:var(--green);border:1px solid rgba(34,211,165,.25)">ISO 20022 ✓</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--hbar)">1–2 Early</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$0.48</div></div>
+    <div class="cs"><div class="csl" data-i="gov_council">Governing Council</div><div class="csv" style="font-size:9px">Google · IBM · Boeing</div></div>
+    <div class="cs"><div class="csl" data-i="cbdc_pilots">CBDC Pilots</div><div class="csv" style="color:var(--green);font-size:10px" data-i="cbdc_3banks">3 Central Banks</div></div>
+  </div>
+</div>
+
+<!-- S&P -->
+<div id="sec-sp" class="sec">
+  <div class="card" style="border-color:rgba(34,197,94,.3)">
+    <div class="ct" style="color:var(--sp)">S&amp;P 500</div>
+    <div class="cpb" style="color:var(--sp)">5,342</div>
+    <div class="csr"><span class="pc up">+0.3%</span><span class="stpill">YTD: -7.2%</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--sp)">Wave 3 Active</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$5,900</div></div>
+    <div class="cs"><div class="csl" data-i="support">Support</div><div class="csv">$5,000</div></div>
+    <div class="cs"><div class="csl" data-i="resist">Resistance</div><div class="csv">$5,850</div></div>
+  </div>
+</div>
+
+<!-- OIL -->
+<div id="sec-oil" class="sec">
+  <div class="card" style="border-color:rgba(148,163,184,.2)">
+    <div class="ct" style="color:var(--oil)" data-i="oil_title">Crude Oil (WTI)</div>
+    <div class="cpb" style="color:var(--oil)">$78.40</div>
+    <div class="csr"><span class="pc dn">-1.1%</span><span class="stpill">YTD: -12.3%</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--oil)" data-i="oil_wave">C-Wave Possible</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$104</div></div>
+    <div class="cs"><div class="csl" data-i="support">Support</div><div class="csv">$74</div></div>
+    <div class="cs"><div class="csl" data-i="resist">Resistance</div><div class="csv">$96</div></div>
+  </div>
+</div>
+
+<!-- GOLD -->
+<div id="sec-gold" class="sec">
+  <div class="card" style="border-color:rgba(245,197,66,.35);box-shadow:0 0 22px rgba(245,197,66,.14)">
+    <div class="ct" style="color:var(--gold)" data-i="gold_title">Gold (XAU/USD)</div>
+    <div style="font-size:10px;color:var(--muted)" data-i="gold_spot">GOLD SPOT</div>
+    <div class="cpb" style="color:var(--gold)">$3,312</div>
+    <div class="csr"><span class="pc up">+0.8%</span><span class="stpill">ATH: $3,500</span><span class="stpill">YTD: +28.4%</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--gold)" data-i="gold_wave">Wave 3 Extended</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$3,600–$4,000</div></div>
+    <div class="cs"><div class="csl" data-i="m_support">Monthly Support</div><div class="csv">$3,100</div></div>
+    <div class="cs"><div class="csl" data-i="m_resist">Monthly Resist.</div><div class="csv">$3,500</div></div>
+    <div class="cs"><div class="csl">4H Impulse</div><div class="csv">74%</div></div>
+    <div class="cs"><div class="csl" data-i="invalid">Invalidation</div><div class="csv" style="color:var(--red)">$3,050</div></div>
+    <div class="cs"><div class="csl">RSI (14)</div><div class="csv">61</div></div>
+    <div class="cs"><div class="csl" data-i="btc_corr">BTC Correlation</div><div class="csv">+0.62</div></div>
+  </div>
+  <div class="card" style="border-color:rgba(245,197,66,.22)">
+    <div class="ct" style="color:var(--gold)" data-i="gold_analysis">Gold Market Analysis</div>
+    <div style="font-size:9px;color:var(--muted);line-height:1.8;margin-bottom:12px" data-i="gold_desc">Gold is in a strong bull market driven by record central bank purchases, geopolitical uncertainty, and falling real interest rates. Elliott Wave shows extended Wave 3 targeting $3,600–$4,000.</div>
+    <div class="bar-w" style="margin-bottom:8px">
+      <div class="bl"><span class="bk" data-i="trend_score">Trend Score</span><span style="color:var(--gold);font-weight:700;font-size:8px">74/100</span></div>
+      <div class="bb2" style="height:7px"><div class="bf" style="width:74%;background:var(--gold);box-shadow:0 0 8px rgba(245,197,66,.4)"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+      <div style="background:var(--bg3);border:1px solid rgba(245,197,66,.2);border-radius:9px;padding:12px">
+        <div style="font-size:7px;font-weight:800;letter-spacing:1.5px;color:var(--gold);margin-bottom:8px" data-i="drivers">DRIVERS</div>
+        <div style="font-size:8px;color:var(--text2);line-height:1.9" data-i="gold_drivers">🏦 Record central bank buying<br>📉 Falling real interest rates<br>🌍 Geopolitics · USD weakness<br>💹 Institutional allocation<br>🔄 Global de-dollarization</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px">
+        <div style="font-size:7px;font-weight:800;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px" data-i="risks">RISKS</div>
+        <div style="font-size:8px;color:var(--text2);line-height:1.9" data-i="gold_risks">⚠ USD strengthening possible<br>📈 Fed rate hikes<br>📉 Risk-on return<br>🔻 Short-term overbought<br>💱 ETF outflows possible</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SILVER -->
+<div id="sec-silver" class="sec">
+  <div class="card" style="border-color:rgba(192,192,192,.35)">
+    <div class="ct" style="color:var(--silver)" data-i="silver_title">Silver (XAG/USD)</div>
+    <div style="font-size:10px;color:var(--muted)" data-i="silver_spot">SILVER SPOT</div>
+    <div class="cpb" style="color:var(--silver)">$32.48</div>
+    <div class="csr"><span class="pc up">+1.3%</span><span class="stpill">ATH: $49.51</span><span class="stpill">YTD: +14.2%</span></div>
+  </div>
+  <div class="csg">
+    <div class="cs"><div class="csl" data-i="elliott">Elliott Wave</div><div class="csv" style="color:var(--silver)" data-i="silver_wave">Wave 3 Early</div></div>
+    <div class="cs"><div class="csl" data-i="target">Target</div><div class="csv" style="color:var(--green)">$38–$50</div></div>
+    <div class="cs"><div class="csl" data-i="m_support">Monthly Support</div><div class="csv">$29.50</div></div>
+    <div class="cs"><div class="csl" data-i="m_resist">Monthly Resist.</div><div class="csv">$35.00</div></div>
+    <div class="cs"><div class="csl">4H Impulse</div><div class="csv">68%</div></div>
+    <div class="cs"><div class="csl" data-i="invalid">Invalidation</div><div class="csv" style="color:var(--red)">$28.00</div></div>
+    <div class="cs"><div class="csl" data-i="gs_ratio">Gold/Silver Ratio</div><div class="csv" style="color:var(--bb)">102:1</div></div>
+    <div class="cs"><div class="csl" data-i="gold_corr">Gold Correlation</div><div class="csv">+0.88</div></div>
+  </div>
+  <div class="card" style="border-color:rgba(192,192,192,.2)">
+    <div class="ct" style="color:var(--silver)" data-i="silver_analysis">Silver Market Analysis</div>
+    <div style="font-size:9px;color:var(--muted);line-height:1.8;margin-bottom:12px" data-i="silver_desc">Silver historically lags gold then moves significantly stronger. The current gold/silver ratio of 102:1 is historically extreme — silver is massively undervalued relative to gold.</div>
+    <div style="background:var(--bg3);border:1px solid rgba(192,192,192,.18);border-radius:9px;padding:13px;margin-top:12px">
+      <div style="font-size:7px;font-weight:800;letter-spacing:1.5px;color:var(--silver);margin-bottom:9px" data-i="ratio_history">GOLD/SILVER RATIO HISTORY</div>
+      <div style="font-size:8px;color:var(--text2);line-height:2.1" data-i="silver_ratio_content">📊 Historical average: ~65:1<br>📊 Current: 102:1 (Silver deeply undervalued)<br>🎯 Normalize to 70:1 → Silver at ~$47<br>🎯 Normalize to 50:1 → Silver at ~$66<br>⚡ Silver historically outperforms gold at bull market peaks</div>
+    </div>
+  </div>
+</div>
+
+<!-- ISO -->
+<div id="sec-iso" class="sec">
+  <div class="card gg">
+    <div class="ct" data-i="iso_title">ISO 20022 Certified Coins</div>
+    <p style="font-size:10px;color:var(--text2);line-height:1.7;margin-bottom:13px" data-i="iso_intro">ISO 20022 is the international standard for electronic data exchange in finance (SWIFT, central banks, SEPA). These cryptocurrencies are officially recognized as ISO 20022-compliant and built to interoperate with global banking systems.</p>
+    <div class="igr" id="iso-grid"></div>
+  </div>
+  <div class="card"><div class="ct" data-i="iso_prices">ISO 20022 Live Prices</div><div class="pl" id="iso-prices"></div></div>
+  <div class="card gp">
+    <div class="ct" data-i="iso_advantages">ISO 20022 Advantages &amp; Use Cases</div>
+    <div class="icmp">
+      <div class="ibox" style="border-color:rgba(34,211,165,.2)">
+        <div class="ibt" style="color:var(--green)" data-i="advantages">✓ ADVANTAGES</div>
+        <div class="ibl" data-i="iso_advs_list">· Bank compatibility<br>· SWIFT integration<br>· Central bank ready<br>· Regulatory compliant<br>· Rich data messaging<br>· Real-time settlement<br>· Institutional adoption</div>
+      </div>
+      <div class="ibox">
+        <div class="ibt" data-i="use_cases">USE CASES</div>
+        <div class="ibl" data-i="iso_uses_list">· Cross-border payments<br>· CBDC infrastructure<br>· Trade finance<br>· Supply chain finance<br>· DeFi/TradFi bridge<br>· Multi-asset transfers<br>· Corporate treasury</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEWS -->
+<div id="sec-news" class="sec">
+  <div class="card gy">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:13px">
+      <div>
+        <div class="ct" style="margin-bottom:3px;color:var(--bb)" data-i="news_title">📰 News Alerts – SEC XRP · BTC · Gold · ISO 20022</div>
+        <div style="font-size:8px;color:var(--muted)" data-i="news_sub">Bloomberg · Reuters · CoinDesk · Real-time monitoring</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px"><div class="dot"></div><span style="font-size:8px;color:var(--green)" data-i="live_feed">Live Feed</span></div>
+    </div>
+    <div class="ntb" id="ntb"></div>
+    <div class="nl" id="news-list"></div>
+  </div>
+</div>
+
+<!-- PORTFOLIO -->
+<div id="sec-portfolio" class="sec">
+  <div class="card gp">
+    <div class="ct" data-i="pf_title">Portfolio – ISO 20022 Allocation</div>
+    <div style="font-size:9px;color:var(--muted);margin-bottom:13px" data-i="pf_sub">Suggested weighting based on Trend Score, Elliott Wave &amp; ISO 20022 compliance</div>
+    <div class="pfg" id="pf-grid"></div>
+    <div style="border-top:1px solid var(--border);padding-top:11px;margin-top:4px;font-size:8px;color:var(--muted)" data-i="pf_disc">⚠ Not financial advice · DYOR · Diversification is essential</div>
+  </div>
+  <div class="card">
+    <div class="ct" data-i="pf_perf">Portfolio Performance vs. S&amp;P 500</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div><div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px"><span style="color:var(--muted)" data-i="pf_iso_lbl">ISO 20022 Portfolio (YTD)</span><span style="color:var(--green);font-weight:700">+34.2%</span></div><div style="height:6px;background:rgba(61,85,112,.2);border-radius:4px;overflow:hidden"><div class="bf g" style="width:68%"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px"><span style="color:var(--muted)" data-i="pf_btc_lbl">BTC Only (YTD)</span><span style="color:var(--btc);font-weight:700">+18.7%</span></div><div style="height:6px;background:rgba(61,85,112,.2);border-radius:4px;overflow:hidden"><div class="bf" style="width:37%;background:var(--btc)"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px"><span style="color:var(--muted)">S&amp;P 500 (YTD)</span><span style="color:var(--red);font-weight:700">-7.2%</span></div><div style="height:6px;background:rgba(61,85,112,.2);border-radius:4px;overflow:hidden"><div class="bf r" style="width:14%"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- WAVE GUIDE -->
+<div id="sec-waves" class="sec">
+  <div class="card gp">
+    <div class="ct" data-i="wg_title">Elliott Wave Guide – Bull &amp; Bear Market</div>
+    <p style="font-size:10px;color:var(--text2);line-height:1.7;margin-bottom:14px" data-i="wg_intro">Elliott Wave Theory describes how markets move in repeating wave patterns. A complete cycle consists of 5 impulse waves in the trend direction, followed by 3 corrective waves against the trend. Understanding which wave we're in helps identify entry/exit points.</p>
+
+    <!-- Detector -->
+    <div style="background:var(--bg3);border:1px solid rgba(34,211,165,.25);border-radius:11px;padding:14px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:8px;font-weight:800;letter-spacing:1.5px;color:var(--purple)" data-i="wg_current_phase">CURRENT MARKET PHASE</div>
+        <div style="display:flex;align-items:center;gap:6px"><div class="dot"></div><span style="font-size:7px;color:var(--green)" data-i="live_sm">Live</span></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <div class="pill bull" style="font-size:11px;padding:5px 14px" data-i="wg_bull_active">🐂 BULL MARKET ACTIVE</div>
+      </div>
+      <div style="font-size:9px;color:var(--text2);line-height:1.7" data-i="wg_phase_desc">BTC is in <strong style="color:var(--btc)">Wave 5 of the Bull Cycle</strong>. Most ISO 20022 coins (XRP, HBAR, XLM) are in early Wave 3 — historically the strongest and longest impulse wave. Gold shows extended Wave 3 with strong central bank buying.</div>
+    </div>
+
+    <!-- BULL MARKET -->
+    <div style="background:var(--bg3);border:1px solid rgba(34,211,165,.3);border-radius:11px;padding:14px;margin-bottom:12px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),rgba(34,211,165,.3))"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:18px">🐂</span>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--green);letter-spacing:1px;font-family:'Syne',sans-serif" data-i="wg_bull_title">BULL MARKET — IMPULSE WAVES (1-5)</div>
+          <div style="font-size:8px;color:var(--muted);margin-top:2px" data-i="wg_bull_sub">5 motive waves in the direction of the primary trend</div>
+        </div>
+      </div>
+
+      <!-- Visual Wave -->
+      <svg viewBox="0 0 320 90" style="width:100%;height:90px;margin-bottom:10px" id="bull-svg"></svg>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--green);margin-bottom:3px" data-i="wg_w1_title">Wave 1 — Initial Push</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_w1_desc">First impulse out of the bear bottom. Skeptical, low volume. Smart money accumulates while retail still bearish. Often retraced 50–80%.</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--bb);margin-bottom:3px" data-i="wg_w2_title">Wave 2 — Pullback</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_w2_desc">Correction of Wave 1, retraces 38.2–61.8% (Fibonacci). Many believe the bear market continues. Last great buying opportunity at low risk.</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(34,211,165,.3);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--green);margin-bottom:3px" data-i="wg_w3_title">Wave 3 — Strongest Move ⭐</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_w3_desc">The longest and most powerful wave. Mainstream FOMO begins. Often 1.618× or 2.618× of Wave 1. Best risk/reward — never the shortest of the 5 waves.</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--bb);margin-bottom:3px" data-i="wg_w4_title">Wave 4 — Consolidation</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_w4_desc">Retraces 23.6–38.2% of Wave 3. Often a complex sideways pattern (triangle, flat). Healthy correction — does NOT enter Wave 1's price territory.</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--bb);margin-bottom:3px" data-i="wg_w5_title">Wave 5 — Final Top ⚠</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_w5_desc">Last hurrah. Often weaker momentum than Wave 3 (bearish divergence on RSI). Maximum euphoria, parabolic moves, news everywhere. Cycle top forms here.</div></div>
+      </div>
+
+      <div style="background:rgba(34,211,165,.08);border:1px solid rgba(34,211,165,.2);border-radius:8px;padding:10px;margin-top:10px">
+        <div style="font-size:8px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:5px" data-i="wg_bull_strategy_t">💡 STRATEGY</div>
+        <div style="font-size:9px;color:var(--text2);line-height:1.65" data-i="wg_bull_strategy">Best entries: end of Wave 2 and Wave 4 corrections. Take profits gradually during Wave 5. Watch for divergences as cycle top warning. Don't fight the trend during Wave 3 — ride it.</div>
+      </div>
+    </div>
+
+    <!-- BEAR MARKET -->
+    <div style="background:var(--bg3);border:1px solid rgba(255,93,108,.3);border-radius:11px;padding:14px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),rgba(255,93,108,.3))"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:18px">🐻</span>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--red);letter-spacing:1px;font-family:'Syne',sans-serif" data-i="wg_bear_title">BEAR MARKET — CORRECTIVE WAVES (A-B-C)</div>
+          <div style="font-size:8px;color:var(--muted);margin-top:2px" data-i="wg_bear_sub">3 corrective waves against the primary trend</div>
+        </div>
+      </div>
+
+      <!-- Visual Wave -->
+      <svg viewBox="0 0 320 90" style="width:100%;height:90px;margin-bottom:10px" id="bear-svg"></svg>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--bg2);border:1px solid rgba(255,93,108,.2);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:3px" data-i="wg_wa_title">Wave A — Initial Drop</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_wa_desc">First sharp decline from cycle top. Most still consider it a normal correction. Sentiment still bullish — "buy the dip" mentality dominates. Volume rising on declines.</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--bb);margin-bottom:3px" data-i="wg_wb_title">Wave B — Bull Trap ⚠</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_wb_desc">Counter-rally that fools investors. Retraces 50–78.6% of Wave A. Media calls "new bull market" — but this is a TRAP. Dangerous for late longs.</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(255,93,108,.3);border-radius:8px;padding:10px"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:3px" data-i="wg_wc_title">Wave C — Capitulation 💥</div><div style="font-size:9px;color:var(--text2);line-height:1.55" data-i="wg_wc_desc">The crash. Often equal in length to Wave A or 1.618× of it. Maximum fear, panic selling. Bottom forms in extreme pessimism — historic buying opportunity.</div></div>
+      </div>
+
+      <div style="background:rgba(255,93,108,.08);border:1px solid rgba(255,93,108,.2);border-radius:8px;padding:10px;margin-top:10px">
+        <div style="font-size:8px;font-weight:800;letter-spacing:1.5px;color:var(--red);margin-bottom:5px" data-i="wg_bear_strategy_t">💡 STRATEGY</div>
+        <div style="font-size:9px;color:var(--text2);line-height:1.65" data-i="wg_bear_strategy">Take profits before Wave A. AVOID buying Wave B rallies — it's a trap. Slowly accumulate during Wave C capitulation, especially when news is most negative. Cash &amp; stablecoins are king during A and B.</div>
+      </div>
+    </div>
+
+    <!-- HISTORICAL CYCLES TABLE -->
+    <div style="margin-top:14px">
+      <div class="ct" style="margin-bottom:10px" data-i="wg_history_title">Historical BTC Cycles</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:8px;color:var(--muted);font-weight:700;letter-spacing:1px"><span data-i="wg_period">PERIOD</span><span data-i="wg_phase">PHASE</span><span data-i="wg_drawdown">PERFORMANCE</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid rgba(34,211,165,.2);border-radius:8px;font-size:9px"><span style="color:var(--text)">2015–2017</span><span style="color:var(--green);font-weight:700" data-i="wg_bull">🐂 Bull (1–5)</span><span style="color:var(--green);font-weight:700">+10,950%</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid rgba(255,93,108,.2);border-radius:8px;font-size:9px"><span style="color:var(--text)">2018</span><span style="color:var(--red);font-weight:700" data-i="wg_bear">🐻 Bear (A-B-C)</span><span style="color:var(--red);font-weight:700">-84%</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid rgba(34,211,165,.2);border-radius:8px;font-size:9px"><span style="color:var(--text)">2019–2021</span><span style="color:var(--green);font-weight:700" data-i="wg_bull">🐂 Bull (1–5)</span><span style="color:var(--green);font-weight:700">+2,000%</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid rgba(255,93,108,.2);border-radius:8px;font-size:9px"><span style="color:var(--text)">2022</span><span style="color:var(--red);font-weight:700" data-i="wg_bear">🐻 Bear (A-B-C)</span><span style="color:var(--red);font-weight:700">-77%</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid rgba(34,211,165,.4);border-radius:8px;font-size:9px;box-shadow:0 0 12px rgba(34,211,165,.15)"><span style="color:var(--text);font-weight:700" data-i="wg_current">2023–2026 (current)</span><span style="color:var(--green);font-weight:700" data-i="wg_bull">🐂 Bull (1–5)</span><span style="color:var(--green);font-weight:700">+460% (active)</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="ct" data-i="wg_rules_title">Key Elliott Wave Rules</div>
+    <div style="font-size:9px;color:var(--text2);line-height:1.85" data-i="wg_rules">
+      ⚖ <strong style="color:var(--text)">Rule 1:</strong> Wave 2 never retraces more than 100% of Wave 1<br>
+      ⚖ <strong style="color:var(--text)">Rule 2:</strong> Wave 3 is never the shortest of waves 1, 3, and 5<br>
+      ⚖ <strong style="color:var(--text)">Rule 3:</strong> Wave 4 never enters Wave 1's price territory<br>
+      📐 <strong style="color:var(--text)">Fibonacci:</strong> Most common retracements are 38.2%, 50%, 61.8%<br>
+      🎯 <strong style="color:var(--text)">Wave 3 Target:</strong> Often 1.618× or 2.618× of Wave 1<br>
+      🔄 <strong style="color:var(--text)">Fractal:</strong> Each wave contains smaller wave structures
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div id="sec-howto" class="sec">
+  <div class="card gp">
+    <div class="ct" data-i="how_title">How Does the Indicator Work?</div>
+    <div class="hc"><div class="ht" data-i="principle">THE PRINCIPLE</div><div class="htxt" data-i="how_principle">The indicator uses two moving averages:<br><br>• <strong style="color:var(--purple)">111-day MA</strong> – short-term moving average<br>• <strong style="color:var(--green)">350-day MA × 2</strong> – long-term average doubled<br><br>The ratio 350÷111 ≈ 3.153 is close to the mathematical constant <strong style="color:var(--purple)">π = 3.14159...</strong></div></div>
+    <div class="hc"><div class="ht" data-i="signal">THE SIGNAL</div><div class="htxt" data-i="how_signal">When the 111-day MA crosses <strong style="color:var(--red)">above</strong> the 350×2 MA, it historically signals a market cycle top. This has occurred at every BTC cycle peak since 2011.<br><br>Currently the 111-MA is at <strong style="color:var(--btc)">51.4%</strong> of the way — far from a crossover.</div></div>
+    <div class="ht" style="margin-bottom:10px" data-i="historical_acc">HISTORICAL ACCURACY</div>
+    <div class="hisl">
+      <div class="hisr"><span class="hisy">2011 – BTC Top ~$31</span><span class="hisr2" data-i="signal_correct">✓ Signal correct</span></div>
+      <div class="hisr"><span class="hisy">2013 – BTC Top ~$1,130</span><span class="hisr2" data-i="signal_correct">✓ Signal correct</span></div>
+      <div class="hisr"><span class="hisy">2017 – BTC Top ~$19,700</span><span class="hisr2" data-i="signal_correct">✓ Signal correct</span></div>
+      <div class="hisr"><span class="hisy">2021 – BTC Top ~$64,000</span><span class="hisr2" data-i="signal_correct">✓ Signal correct</span></div>
+      <div class="hisr"><span class="hisy" data-i="current">2025/26 – Current</span><span style="font-size:9px;font-weight:700;color:var(--bb)" data-i="no_signal">⏳ No signal (Bullish)</span></div>
+    </div>
+  </div>
+  <div class="card"><div class="ct" data-i="disclaimer">Disclaimer</div><div style="font-size:9px;color:var(--muted);line-height:1.75" data-i="disclaimer_text">π = 3.14159265 · NOT FINANCIAL ADVICE · DYOR<br><br>All data, analyses and signals are for educational and informational purposes only. They do not constitute financial, investment or trading advice. Cryptocurrencies are highly volatile asset classes with significant loss risk.</div></div>
+</div>
+
+</div>
+<footer data-i="footer">π = 3.14159265 · NOT FINANCIAL ADVICE · DYOR · Mathematical Market Analysis Pro v3.0 · 2026</footer>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  TRANSLATIONS – 6 LANGUAGES, ALL CONTENT
+// ═══════════════════════════════════════════════════
+const T={
+EN:{
+hdr_title:'Mathematical Market Analysis',
+hdr_sub:'BTC · XRP · SOL · XLM · HBAR · Gold · Silver · S&P · Oil · ISO 20022',
+live:'LIVE',live_sm:'Live',
+nav_dash:'Dashboard',nav_oil:'🛢 Oil',nav_gold:'🥇 Gold',nav_silver:'🥈 Silver',nav_iso:'ISO 20022 ✓',nav_news:'📰 Alerts',nav_pf:'Portfolio',nav_waves:'📊 Wave Guide',nav_how:'How It Works',
+signal_title:'π MARKET SIGNAL',signal_sub:'Weighted live calculation · Monthly candles',
+bullish:'BULLISH',bearish:'BEARISH',pi_score:'Pi Score',confidence:'Confidence',
+signal_breakdown:'Signal Breakdown',autorefresh:'Auto-refresh · Next update in',
+market_indicator:'Market Position Indicator',tf_active:'Active timeframe:',data_basis:'Data basis: monthly candles',
+tf_1w:'1 Week',tf_1m:'1 Month',tf_3m:'3 Months',tf_1y:'1 Year',tf_4y:'4 Years',
+ph_bottom:'Bottom',ph_build:'Build-up',ph_ath:'ATH',ph_corr:'Correction',
+live_prices:'Live Prices',drawdown:'Drawdown Comparison (%)',monthly_struct:'Monthly & 4H Structure',
+elliott:'Elliott Wave',zone_4h:'4H Zone',
+target:'Target',m_mid:'Monthly Mid',m_floor:'Monthly Floor',m_support:'Monthly Support',m_resist:'Monthly Resist.',
+support:'Support',resist:'Resistance',invalid:'Invalidation',wave_target:'Wave Target',
+sec_status:'SEC Status',settled:'✓ Settled',iso_status:'ISO Status',certified:'Certified',
+gov_council:'Governing Council',cbdc_pilots:'CBDC Pilots',cbdc_3banks:'3 Central Banks',
+btc_corr:'BTC Correlation',gold_corr:'Gold Correlation',gs_ratio:'Gold/Silver Ratio',
+trend_score:'Trend Score',drivers:'DRIVERS',risks:'RISKS',
+far_top:'Far from top',near_top:'Near top',result:'RESULT',
+btc_ma_title:'MA Ratio Indicator (Monthly)',
+btc_ma_desc:'The MA ratio is at 51.4% of the way to a cycle top crossover. Historically, when the 111-day MA crosses the 350×2 MA, a cycle peak follows. We are still far from that signal — bullish for the cycle.',
+xrp_legal:'SEC XRP Legal Status',
+xrp_legal_desc:'The SEC vs. Ripple case was officially settled in 2024. A US federal judge ruled XRP is NOT a security when sold to retail investors. XRP can now be freely traded on US exchanges.',
+xrp_result_list:'✓ Not a security (Retail)<br>✓ Settlement approved<br>✓ US exchanges reactivated<br>✓ Ripple ETF under review',
+xrp_iso_list:'✓ Fully compliant<br>✓ 300+ bank partners<br>✓ ODL Network<br>✓ SWIFT integration',
+oil_title:'Crude Oil (WTI)',oil_wave:'C-Wave Possible',
+gold_title:'Gold (XAU/USD)',gold_spot:'GOLD SPOT',gold_wave:'Wave 3 Extended',
+gold_analysis:'Gold Market Analysis',
+gold_desc:'Gold is in a strong bull market driven by record central bank purchases, geopolitical uncertainty, and falling real interest rates. Elliott Wave shows extended Wave 3 targeting $3,600–$4,000.',
+gold_drivers:'🏦 Record central bank buying<br>📉 Falling real interest rates<br>🌍 Geopolitics · USD weakness<br>💹 Institutional allocation<br>🔄 Global de-dollarization',
+gold_risks:'⚠ USD strengthening possible<br>📈 Fed rate hikes<br>📉 Risk-on return<br>🔻 Short-term overbought<br>💱 ETF outflows possible',
+silver_title:'Silver (XAG/USD)',silver_spot:'SILVER SPOT',silver_wave:'Wave 3 Early',
+silver_analysis:'Silver Market Analysis',
+silver_desc:'Silver historically lags gold then moves significantly stronger. The current gold/silver ratio of 102:1 is historically extreme — silver is massively undervalued relative to gold.',
+ratio_history:'GOLD/SILVER RATIO HISTORY',
+silver_ratio_content:'📊 Historical average: ~65:1<br>📊 Current: 102:1 (Silver deeply undervalued)<br>🎯 Normalize to 70:1 → Silver at ~$47<br>🎯 Normalize to 50:1 → Silver at ~$66<br>⚡ Silver historically outperforms gold at bull market peaks',
+iso_title:'ISO 20022 Certified Coins',iso_prices:'ISO 20022 Live Prices',
+iso_intro:'ISO 20022 is the international standard for electronic data exchange in finance (SWIFT, central banks, SEPA). These cryptocurrencies are officially recognized as ISO 20022-compliant and built to interoperate with global banking systems.',
+iso_advantages:'ISO 20022 Advantages & Use Cases',advantages:'✓ ADVANTAGES',use_cases:'USE CASES',
+iso_advs_list:'· Bank compatibility<br>· SWIFT integration<br>· Central bank ready<br>· Regulatory compliant<br>· Rich data messaging<br>· Real-time settlement<br>· Institutional adoption',
+iso_uses_list:'· Cross-border payments<br>· CBDC infrastructure<br>· Trade finance<br>· Supply chain finance<br>· DeFi/TradFi bridge<br>· Multi-asset transfers<br>· Corporate treasury',
+news_title:'📰 News Alerts – SEC XRP · BTC · Gold · ISO 20022',
+news_sub:'Bloomberg · Reuters · CoinDesk · Real-time monitoring',live_feed:'Live Feed',
+news_chips:['ALL SOURCES','BLOOMBERG','REUTERS','COINDESK','SEC XRP','BTC','ISO 20022','🥇 Gold','🥈 Silver'],
+imp_h:'HIGH',imp_m:'MEDIUM',imp_l:'LOW',
+pf_title:'Portfolio – ISO 20022 Allocation',
+pf_sub:'Suggested weighting based on Trend Score, Elliott Wave & ISO 20022 compliance',
+pf_disc:'⚠ Not financial advice · DYOR · Diversification is essential',
+pf_perf:'Portfolio Performance vs. S&P 500',pf_iso_lbl:'ISO 20022 Portfolio (YTD)',pf_btc_lbl:'BTC Only (YTD)',
+how_title:'How Does the Indicator Work?',principle:'THE PRINCIPLE',signal:'THE SIGNAL',
+how_principle:'The indicator uses two moving averages:<br><br>• <strong style="color:var(--purple)">111-day MA</strong> – short-term moving average<br>• <strong style="color:var(--green)">350-day MA × 2</strong> – long-term average doubled<br><br>The ratio 350÷111 ≈ 3.153 is close to the mathematical constant <strong style="color:var(--purple)">π = 3.14159...</strong>',
+how_signal:'When the 111-day MA crosses <strong style="color:var(--red)">above</strong> the 350×2 MA, it historically signals a market cycle top. This has occurred at every BTC cycle peak since 2011.<br><br>Currently the 111-MA is at <strong style="color:var(--btc)">51.4%</strong> of the way — far from a crossover.',
+historical_acc:'HISTORICAL ACCURACY',signal_correct:'✓ Signal correct',current:'2025/26 – Current',no_signal:'⏳ No signal (Bullish)',
+disclaimer:'Disclaimer',
+disclaimer_text:'π = 3.14159265 · NOT FINANCIAL ADVICE · DYOR<br><br>All data, analyses and signals are for educational and informational purposes only. They do not constitute financial, investment or trading advice. Cryptocurrencies are highly volatile asset classes with significant loss risk.',
+footer:'π = 3.14159265 · NOT FINANCIAL ADVICE · DYOR · Mathematical Market Analysis Pro v3.0 · 2026',
+ticker:['SEC judge approves Ripple settlement · XRP +4.2% · Historic crypto ruling','Ripple ODL expands to 12 new markets · XRP volume +340%','SEC revises Digital Asset Framework · BTC ETF inflows strong','BlackRock BTC ETF: $2.3B inflows in one week · Institutional adoption record','US Congress: Bipartisan bill protects XRP · Payment tokens not securities','HBAR: 3 central banks select Hedera for CBDC pilot · ISO 20022','🥇 GOLD $3,312 · New all-time high · Central banks buying record amounts','🥈 SILVER $32.48 · Gold/Silver ratio 102:1 · Historically undervalued · Target $50+'],
+news_data:[
+{src:'bb',tags:['SEC XRP'],time:'12 min ago',h:'SEC judge approves final Ripple settlement in XRP lawsuit',s:'A US federal judge approved the SEC-Ripple settlement. Reduced fine, XRP ruled not a security for retail sales. Landmark for crypto regulation.',imp:'h'},
+{src:'re',tags:['XRP','ISO 20022'],time:'28 min ago',h:'Ripple ODL expands to 12 new markets – XRP volume +340%',s:'Ripple\'s On-Demand Liquidity expanded to 12 new markets in Asia and Africa. XRP transaction volume rose 340% year-over-year.',imp:'h'},
+{src:'cd',tags:['SEC XRP','BTC'],time:'45 min ago',h:'SEC revises Digital Asset Framework after Ripple settlement',s:'The SEC is revising its regulatory framework for digital assets. XRP and BTC lead institutional inflows.',imp:'h'},
+{src:'bb',tags:['BTC'],time:'1 h ago',h:'BlackRock Bitcoin ETF: $2.3B net inflows in one week',s:'BlackRock\'s Bitcoin ETF (IBIT) recorded its second-largest weekly inflows since launch. Institutional adoption accelerating.',imp:'h'},
+{src:'re',tags:['SEC XRP'],time:'2 h ago',h:'Bipartisan US bill explicitly excludes XRP from securities definition',s:'A new bipartisan bill in the US House would explicitly exclude payment tokens like XRP from the securities definition.',imp:'m'},
+{src:'cd',tags:['ISO 20022','HBAR'],time:'3 h ago',h:'Hedera selected by three central banks for CBDC pilot',s:'Three central banks in Asia-Pacific selected Hedera Hashgraph for CBDC pilots, citing ISO 20022 compliance.',imp:'m'},
+{src:'bb',tags:['Gold'],time:'4 h ago',h:'Gold hits new all-time high – central banks buying at record pace',s:'Gold climbed to $3,312/oz. Central banks worldwide bought the largest amount of gold since 1967, driven by de-dollarization.',imp:'h'},
+{src:'re',tags:['Gold','Silver'],time:'5 h ago',h:'Gold/Silver ratio at 102:1 – analysts see massive upside for silver',s:'The gold/silver ratio of 102:1 is historically extreme. A normalization to the historical average of 65:1 would put silver above $50.',imp:'h'},
+{src:'cd',tags:['Gold','BTC'],time:'6 h ago',h:'Bitcoin and Gold show highest correlation since 2020',s:'The 90-day correlation between BTC and Gold reached 0.62, the highest since 2020. Institutions use both as USD inflation hedges.',imp:'m'},
+{src:'bb',tags:['XRP','BTC'],time:'7 h ago',h:'JPMorgan: Crypto portfolio with XRP and BTC outperforms traditional assets by 38%',s:'A new JPMorgan study shows mixed portfolios with XRP and BTC significantly outperform bonds and equity indices.',imp:'m'},
+{src:'re',tags:['BTC'],time:'8 h ago',h:'El Salvador adds 30 more BTC to state reserves',s:'El Salvador continued stacking Bitcoin reserves. Strategy viewed as model for other Latin American nations.',imp:'l'},
+{src:'cd',tags:['ISO 20022','XLM'],time:'9 h ago',h:'Stellar SDF announces SWIFT GPI integration for full ISO 20022 compliance',s:'The Stellar Development Foundation integrates SWIFT GPI for complete ISO 20022 compatibility of XLM transactions.',imp:'m'},
+],
+toasts:['⚡ BREAKING: XRP ETF – SEC must respond within 45 days','📈 XRP/USD breaks $1.50 resistance · Next target $1.80','🏛 QNT Quant Network: Major bank partnership announced','🔥 BTC: Institutional demand at 3-year high','🌐 ISO 20022: All G20 central banks fully migrated by 2026','📊 HBAR: Hedera Council expands to 40 members','🥇 Gold central bank buying at 55-year high · $4k target','🥈 Silver industrial demand surge · Solar +42%'],
+},
+DE:{
+hdr_title:'Mathematische Marktanalyse',
+hdr_sub:'BTC · XRP · SOL · XLM · HBAR · Gold · Silber · S&P · Öl · ISO 20022',
+live:'LIVE',live_sm:'Live',
+nav_dash:'Dashboard',nav_oil:'🛢 Öl',nav_gold:'🥇 Gold',nav_silver:'🥈 Silber',nav_iso:'ISO 20022 ✓',nav_news:'📰 Meldungen',nav_pf:'Portfolio',nav_waves:'📊 Wellen-Guide',nav_how:'Wie es funktioniert',
+signal_title:'π MARKTSIGNAL',signal_sub:'Gewichtete Live-Berechnung · Monatliche Kerzen',
+bullish:'BULLISCH',bearish:'BÄRISCH',pi_score:'Pi Score',confidence:'Konfidenz',
+signal_breakdown:'Signal-Aufschlüsselung',autorefresh:'Auto-Refresh · Nächstes Update in',
+market_indicator:'Marktpositions-Indikator',tf_active:'Aktiver Zeitrahmen:',data_basis:'Datenbasis: Monatskerzen',
+tf_1w:'1 Woche',tf_1m:'1 Monat',tf_3m:'3 Monate',tf_1y:'1 Jahr',tf_4y:'4 Jahre',
+ph_bottom:'Tief',ph_build:'Aufbau',ph_ath:'ATH',ph_corr:'Korrektur',
+live_prices:'Live-Kurse',drawdown:'Drawdown-Vergleich (%)',monthly_struct:'Monatliche & 4H Struktur',
+elliott:'Elliott-Welle',zone_4h:'4H Zone',
+target:'Ziel',m_mid:'Monatl. Mitte',m_floor:'Monatl. Boden',m_support:'Monatl. Support',m_resist:'Monatl. Widerstand',
+support:'Support',resist:'Widerstand',invalid:'Invalidierung',wave_target:'Wellenziel',
+sec_status:'SEC Status',settled:'✓ Beigelegt',iso_status:'ISO Status',certified:'Zertifiziert',
+gov_council:'Governing Council',cbdc_pilots:'CBDC Pilots',cbdc_3banks:'3 Zentralbanken',
+btc_corr:'BTC Korrelation',gold_corr:'Gold Korrelation',gs_ratio:'Gold/Silber Ratio',
+trend_score:'Trend Score',drivers:'TREIBER',risks:'RISIKEN',
+far_top:'Weit vom Top',near_top:'Nahe Top',result:'ERGEBNIS',
+btc_ma_title:'MA-Ratio Indikator (Monatlich)',
+btc_ma_desc:'Die MA-Ratio liegt bei 51.4% des Weges bis zum Zyklus-Top-Crossover. Historisch signalisiert das Kreuzen des 111-Tage-MA über den 350×2-MA ein Zyklushoch. Wir sind noch weit davon entfernt — bullisch.',
+xrp_legal:'SEC XRP Rechtsstatus',
+xrp_legal_desc:'Der SEC-vs.-Ripple-Fall wurde 2024 beigelegt. Ein US-Bundesrichter entschied, dass XRP beim Verkauf an Privatanleger KEIN Wertpapier ist. XRP kann nun frei an US-Börsen gehandelt werden.',
+xrp_result_list:'✓ Kein Wertpapier (Retail)<br>✓ Einigung genehmigt<br>✓ US-Börsen reaktiviert<br>✓ Ripple ETF in Prüfung',
+xrp_iso_list:'✓ Vollständig konform<br>✓ 300+ Bankpartner<br>✓ ODL Netzwerk<br>✓ SWIFT-Integration',
+oil_title:'Rohöl (WTI)',oil_wave:'C-Welle möglich',
+gold_title:'Gold (XAU/USD)',gold_spot:'GOLD SPOT',gold_wave:'Welle 3 Ausgedehnt',
+gold_analysis:'Gold Marktanalyse',
+gold_desc:'Gold befindet sich in einem starken Bullenmarkt, angetrieben durch Rekord-Zentralbankkäufe, geopolitische Unsicherheiten und fallende Realzinsen. Welle 3 mit Ziel $3.600–$4.000.',
+gold_drivers:'🏦 Rekord-Zentralbankkäufe<br>📉 Fallende Realzinsen<br>🌍 Geopolitik · USD-Schwäche<br>💹 Institutionelle Allokation<br>🔄 Globale De-Dollarisierung',
+gold_risks:'⚠ USD-Stärkung möglich<br>📈 Fed Zinserhöhungen<br>📉 Risikoappetit Rückkehr<br>🔻 Kurzfristig überkauft<br>💱 ETF-Abflüsse möglich',
+silver_title:'Silber (XAG/USD)',silver_spot:'SILBER SPOT',silver_wave:'Welle 3 Früh',
+silver_analysis:'Silber Marktanalyse',
+silver_desc:'Silber läuft historisch Gold mit Verzögerung hinterher und zeigt dann deutlich stärkere Bewegungen. Das Gold/Silber-Ratio von 102:1 ist historisch extrem — Silber ist stark unterbewertet.',
+ratio_history:'GOLD/SILBER RATIO HISTORISCH',
+silver_ratio_content:'📊 Historischer Durchschnitt: ~65:1<br>📊 Aktuell: 102:1 (Silber stark unterbewertet)<br>🎯 Normalisierung auf 70:1 → Silber ~$47<br>🎯 Normalisierung auf 50:1 → Silber ~$66<br>⚡ Silber übertrifft Gold am Zyklusende',
+iso_title:'ISO 20022 Zertifizierte Coins',iso_prices:'ISO 20022 Live-Kurse',
+iso_intro:'ISO 20022 ist der internationale Standard für elektronischen Datenaustausch im Finanzwesen (SWIFT, Zentralbanken, SEPA). Diese Kryptowährungen sind offiziell als ISO 20022-konform anerkannt.',
+iso_advantages:'ISO 20022 Vorteile & Anwendung',advantages:'✓ VORTEILE',use_cases:'ANWENDUNGEN',
+iso_advs_list:'· Bankkompatibilität<br>· SWIFT-Integration<br>· Zentralbankfähig<br>· Regulatorisch konform<br>· Rich Data Messaging<br>· Echtzeit-Abwicklung<br>· Institutionelle Adoption',
+iso_uses_list:'· Grenzüberschr. Zahlungen<br>· CBDC-Infrastruktur<br>· Trade Finance<br>· Supply Chain Finance<br>· DeFi/TradFi Bridge<br>· Multi-Asset Transfers<br>· Corporate Treasury',
+news_title:'📰 Meldungen – SEC XRP · BTC · Gold · ISO 20022',
+news_sub:'Bloomberg · Reuters · CoinDesk · Echtzeit-Monitoring aktiv',live_feed:'Live Feed',
+news_chips:['ALLE QUELLEN','BLOOMBERG','REUTERS','COINDESK','SEC XRP','BTC','ISO 20022','🥇 Gold','🥈 Silber'],
+imp_h:'HOCH',imp_m:'MITTEL',imp_l:'NIEDRIG',
+pf_title:'Portfolio – ISO 20022 Gewichtung',
+pf_sub:'Empfohlene Gewichtung basierend auf Trend Score, Elliott-Welle & ISO 20022-Konformität',
+pf_disc:'⚠ Keine Finanzberatung · DYOR · Diversifikation ist essenziell',
+pf_perf:'Portfolio-Performance vs. S&P 500',pf_iso_lbl:'ISO 20022 Portfolio (YTD)',pf_btc_lbl:'Nur BTC (YTD)',
+how_title:'Wie funktioniert der Indikator?',principle:'DAS GRUNDPRINZIP',signal:'DAS SIGNAL',
+how_principle:'Der Indikator nutzt zwei gleitende Durchschnitte:<br><br>• <strong style="color:var(--purple)">111-Tage-MA</strong> – kurzfristiger Durchschnitt<br>• <strong style="color:var(--green)">350-Tage-MA × 2</strong> – langfristiger Durchschnitt verdoppelt<br><br>Das Verhältnis 350÷111 ≈ 3.153 ≈ <strong style="color:var(--purple)">π = 3.14159...</strong>',
+how_signal:'Wenn der 111-Tage-MA den 350×2-MA von <strong style="color:var(--red)">unten kreuzt</strong>, signalisiert dies historisch ein Zyklus-Top. Dieses Signal trat bei jedem BTC-Zyklushoch seit 2011 auf.<br><br>Aktuell liegt der 111-MA bei <strong style="color:var(--btc)">51.4%</strong> des Weges — weit entfernt vom Top.',
+historical_acc:'HISTORISCHE TREFFSICHERHEIT',signal_correct:'✓ Korrekt signalisiert',current:'2025/26 – Aktuell',no_signal:'⏳ Kein Signal (Bullisch)',
+disclaimer:'Disclaimer',
+disclaimer_text:'π = 3.14159265 · KEINE FINANZBERATUNG · DYOR<br><br>Alle Daten, Analysen und Signale dienen ausschließlich zu Bildungs- und Informationszwecken. Keine Finanz-, Investment- oder Handelsberatung. Kryptowährungen sind hochvolatile Anlageklassen mit erheblichem Verlustrisiko.',
+footer:'π = 3.14159265 · KEINE FINANZBERATUNG · DYOR · Mathematische Marktanalyse Pro v3.0 · 2026',
+ticker:['SEC-Richter genehmigt Ripple-Einigung · XRP +4.2% · Historischer Durchbruch','Ripple ODL auf 12 Märkte · XRP-Volumen +340% · Asien & Afrika','SEC überarbeitet Digital Asset Framework · BTC ETF Zuflüsse stark','BlackRock BTC ETF: $2.3 Mrd. Zuflüsse in einer Woche','US-Kongress: XRP explizit kein Wertpapier · Bipartisaner Gesetzentwurf','HBAR: 3 Zentralbanken wählen Hedera für CBDC-Pilot · ISO 20022','🥇 GOLD $3.312 · Neues ATH · Zentralbanken kaufen Rekordmengen','🥈 SILBER $32.48 · Gold/Silber-Ratio 102:1 · Historisch unterbewertet · Ziel $50+'],
+news_data:[
+{src:'bb',tags:['SEC XRP'],time:'vor 12 Min',h:'SEC-Richter genehmigt finale Einigungsvereinbarung mit Ripple in XRP-Klage',s:'Ein US-Bundesrichter hat die Einigung zwischen SEC und Ripple genehmigt. Reduzierte Geldstrafe, XRP gilt nicht als Wertpapier beim Retail-Verkauf.',imp:'h'},
+{src:'re',tags:['XRP','ISO 20022'],time:'vor 28 Min',h:'Ripple ODL-Netzwerk expandiert auf 12 neue Märkte – XRP-Volumen +340%',s:'Ripples On-Demand Liquidity ist auf 12 neue Märkte in Asien und Afrika ausgeweitet worden. Das XRP-Transaktionsvolumen stieg um 340%.',imp:'h'},
+{src:'cd',tags:['SEC XRP','BTC'],time:'vor 45 Min',h:'SEC überarbeitet Digital-Asset-Framework nach Ripple-Einigung umfassend',s:'Die US-Börsenaufsicht überarbeitet ihr Rahmenwerk für digitale Assets. XRP und BTC führen institutionelle Zuflüsse an.',imp:'h'},
+{src:'bb',tags:['BTC'],time:'vor 1 Std',h:'BlackRock Bitcoin ETF: $2.3 Mrd. Netto-Zuflüsse in einer Woche',s:'BlackRocks Bitcoin ETF (IBIT) verzeichnete die zweitgrößten Wochenzuflüsse seit Launch. Institutionelle Adoption beschleunigt sich.',imp:'h'},
+{src:'re',tags:['SEC XRP'],time:'vor 2 Std',h:'Bipartisaner US-Gesetzentwurf schließt XRP explizit aus Wertpapierdefinition aus',s:'Ein neuer bipartisaner Gesetzentwurf im US-Repräsentantenhaus würde Zahlungs-Token wie XRP explizit ausschließen.',imp:'m'},
+{src:'cd',tags:['ISO 20022','HBAR'],time:'vor 3 Std',h:'Hedera Hashgraph von drei Zentralbanken für CBDC-Pilot ausgewählt',s:'Drei Zentralbanken in Asien-Pazifik haben HBAR für CBDC-Pilotprojekte ausgewählt – dank ISO 20022-Konformität.',imp:'m'},
+{src:'bb',tags:['Gold'],time:'vor 4 Std',h:'Gold erreicht neues Allzeithoch – Zentralbanken kaufen auf Rekordhoch',s:'Der Goldpreis kletterte auf $3.312/oz. Zentralbanken haben 2025 die größte Menge Gold seit 1967 gekauft.',imp:'h'},
+{src:'re',tags:['Gold','Silver'],time:'vor 5 Std',h:'Gold/Silber-Ratio auf 102:1 – Analysten sehen massives Aufholpotenzial für Silber',s:'Das Gold/Silber-Ratio von 102:1 ist historisch extrem hoch. Bei Normalisierung auf 65:1 würde Silber auf über $50 steigen.',imp:'h'},
+{src:'cd',tags:['Gold','BTC'],time:'vor 6 Std',h:'Bitcoin und Gold zeigen höchste Korrelation seit 2020',s:'Die 90-Tage-Korrelation zwischen BTC und Gold hat 0.62 erreicht. Institutionelle nutzen beide als USD-Inflationsschutz.',imp:'m'},
+{src:'bb',tags:['XRP','BTC'],time:'vor 7 Std',h:'JPMorgan: Krypto-Portfolio mit XRP und BTC übertrifft traditionelle Assets um 38%',s:'Eine neue JPMorgan-Studie zeigt, dass Portfolios mit XRP und BTC traditionelle Indizes deutlich übertreffen.',imp:'m'},
+{src:'re',tags:['BTC'],time:'vor 8 Std',h:'El Salvador verstärkt Bitcoin-Staatsreserven – 30 weitere BTC hinzugefügt',s:'El Salvador hat seine Bitcoin-Staatsreserven weiter aufgestockt. Vorbild für weitere Länder.',imp:'l'},
+{src:'cd',tags:['ISO 20022','XLM'],time:'vor 9 Std',h:'Stellar SDF kündigt SWIFT-GPI-Integration für vollständige ISO 20022-Compliance an',s:'Die Stellar Development Foundation integriert SWIFT GPI für vollständige ISO 20022-Kompatibilität.',imp:'m'},
+],
+toasts:['⚡ XRP ETF – SEC muss in 45 Tagen antworten','📈 XRP/USD durchbricht $1.50 · Nächstes Ziel $1.80','🏛 QNT: Partnerschaft mit Großbank angekündigt','🔥 BTC: Institutionelle Nachfrage auf 3-Jahres-Hoch','🌐 ISO 20022: Alle G20-Zentralbanken bis 2026 migriert','📊 HBAR: Council expandiert auf 40 Mitglieder','🥇 Gold Zentralbankkäufe auf 55-Jahres-Hoch · Ziel $4.000','🥈 Silber Industrienachfrage steigt · Solar +42%'],
+},
+ES:{
+hdr_title:'Análisis Matemático del Mercado',
+hdr_sub:'BTC · XRP · SOL · XLM · HBAR · Oro · Plata · S&P · Petróleo · ISO 20022',
+live:'EN VIVO',live_sm:'En vivo',
+nav_dash:'Panel',nav_oil:'🛢 Petróleo',nav_gold:'🥇 Oro',nav_silver:'🥈 Plata',nav_iso:'ISO 20022 ✓',nav_news:'📰 Alertas',nav_pf:'Portafolio',nav_waves:'📊 Guía de Ondas',nav_how:'Cómo funciona',
+signal_title:'π SEÑAL DE MERCADO',signal_sub:'Cálculo en vivo ponderado · Velas mensuales',
+bullish:'ALCISTA',bearish:'BAJISTA',pi_score:'Puntuación Pi',confidence:'Confianza',
+signal_breakdown:'Análisis de señal',autorefresh:'Auto-actualización · Próxima en',
+market_indicator:'Indicador de Posición de Mercado',tf_active:'Marco temporal activo:',data_basis:'Base de datos: velas mensuales',
+tf_1w:'1 Semana',tf_1m:'1 Mes',tf_3m:'3 Meses',tf_1y:'1 Año',tf_4y:'4 Años',
+ph_bottom:'Mínimo',ph_build:'Acumulación',ph_ath:'ATH',ph_corr:'Corrección',
+live_prices:'Precios en vivo',drawdown:'Comparación de caída (%)',monthly_struct:'Estructura mensual & 4H',
+elliott:'Onda de Elliott',zone_4h:'Zona 4H',
+target:'Objetivo',m_mid:'Medio mensual',m_floor:'Piso mensual',m_support:'Soporte mensual',m_resist:'Resistencia mensual',
+support:'Soporte',resist:'Resistencia',invalid:'Invalidación',wave_target:'Objetivo onda',
+sec_status:'Estado SEC',settled:'✓ Resuelto',iso_status:'Estado ISO',certified:'Certificado',
+gov_council:'Consejo Gobernante',cbdc_pilots:'Pilotos CBDC',cbdc_3banks:'3 Bancos Centrales',
+btc_corr:'Correlación BTC',gold_corr:'Correlación Oro',gs_ratio:'Ratio Oro/Plata',
+trend_score:'Puntuación tendencia',drivers:'IMPULSORES',risks:'RIESGOS',
+far_top:'Lejos del techo',near_top:'Cerca del techo',result:'RESULTADO',
+btc_ma_title:'Indicador Ratio MA (Mensual)',
+btc_ma_desc:'El ratio MA está al 51.4% del camino hacia un cruce de techo. Históricamente, cuando el MA de 111 días cruza el MA 350×2, sigue un pico. Aún estamos lejos – señal alcista.',
+xrp_legal:'Estado legal SEC XRP',
+xrp_legal_desc:'El caso SEC vs. Ripple se resolvió en 2024. Un juez federal de EE.UU. dictaminó que XRP NO es un valor cuando se vende a inversores minoristas.',
+xrp_result_list:'✓ No es valor (Retail)<br>✓ Acuerdo aprobado<br>✓ Bolsas EE.UU. reactivadas<br>✓ ETF Ripple en revisión',
+xrp_iso_list:'✓ Totalmente conforme<br>✓ 300+ socios bancarios<br>✓ Red ODL<br>✓ Integración SWIFT',
+oil_title:'Petróleo Crudo (WTI)',oil_wave:'Onda C posible',
+gold_title:'Oro (XAU/USD)',gold_spot:'PRECIO SPOT ORO',gold_wave:'Onda 3 Extendida',
+gold_analysis:'Análisis del Oro',
+gold_desc:'El oro está en un fuerte mercado alcista impulsado por compras récord de bancos centrales, incertidumbre geopolítica y caída de tasas reales. Onda 3 con objetivo $3.600–$4.000.',
+gold_drivers:'🏦 Compras récord bancos centrales<br>📉 Caída de tasas reales<br>🌍 Geopolítica · Debilidad USD<br>💹 Asignación institucional<br>🔄 Des-dolarización global',
+gold_risks:'⚠ Fortaleza USD posible<br>📈 Subidas Fed<br>📉 Retorno apetito riesgo<br>🔻 Sobrecomprado c/p<br>💱 Salidas ETF posibles',
+silver_title:'Plata (XAG/USD)',silver_spot:'PRECIO SPOT PLATA',silver_wave:'Onda 3 Temprana',
+silver_analysis:'Análisis de la Plata',
+silver_desc:'La plata históricamente sigue al oro con retraso y luego mueve mucho más fuerte. El ratio oro/plata 102:1 es extremo – la plata está masivamente infravalorada.',
+ratio_history:'RATIO ORO/PLATA HISTÓRICO',
+silver_ratio_content:'📊 Promedio histórico: ~65:1<br>📊 Actual: 102:1 (Plata muy infravalorada)<br>🎯 Normalización a 70:1 → Plata ~$47<br>🎯 Normalización a 50:1 → Plata ~$66<br>⚡ La plata supera al oro al final del mercado alcista',
+iso_title:'Criptomonedas ISO 20022',iso_prices:'Precios ISO 20022 en vivo',
+iso_intro:'ISO 20022 es el estándar internacional para intercambio electrónico de datos financieros. Estas criptomonedas están reconocidas oficialmente como conformes con ISO 20022.',
+iso_advantages:'Ventajas ISO 20022 y casos de uso',advantages:'✓ VENTAJAS',use_cases:'CASOS DE USO',
+iso_advs_list:'· Compatibilidad bancaria<br>· Integración SWIFT<br>· Apto banco central<br>· Conformidad regulatoria<br>· Mensajería de datos ricos<br>· Liquidación tiempo real<br>· Adopción institucional',
+iso_uses_list:'· Pagos transfronterizos<br>· Infraestructura CBDC<br>· Financiación comercial<br>· Cadena de suministro<br>· Puente DeFi/TradFi<br>· Transferencias multi-activo<br>· Tesorería corporativa',
+news_title:'📰 Alertas – SEC XRP · BTC · Oro · ISO 20022',
+news_sub:'Bloomberg · Reuters · CoinDesk · Monitoreo en tiempo real',live_feed:'En vivo',
+news_chips:['TODAS FUENTES','BLOOMBERG','REUTERS','COINDESK','SEC XRP','BTC','ISO 20022','🥇 Oro','🥈 Plata'],
+imp_h:'ALTO',imp_m:'MEDIO',imp_l:'BAJO',
+pf_title:'Portafolio – Asignación ISO 20022',
+pf_sub:'Ponderación sugerida basada en Puntuación, Onda Elliott y conformidad ISO 20022',
+pf_disc:'⚠ No es asesoramiento financiero · DYOR · La diversificación es esencial',
+pf_perf:'Rendimiento del portafolio vs. S&P 500',pf_iso_lbl:'Portafolio ISO 20022 (YTD)',pf_btc_lbl:'Solo BTC (YTD)',
+how_title:'¿Cómo funciona el indicador?',principle:'EL PRINCIPIO',signal:'LA SEÑAL',
+how_principle:'El indicador utiliza dos medias móviles:<br><br>• <strong style="color:var(--purple)">MM 111 días</strong> – media corto plazo<br>• <strong style="color:var(--green)">MM 350 días × 2</strong> – media largo plazo doblada<br><br>La razón 350÷111 ≈ 3.153 ≈ <strong style="color:var(--purple)">π = 3.14159...</strong>',
+how_signal:'Cuando el MA 111 días cruza <strong style="color:var(--red)">por encima</strong> del MA 350×2, señala históricamente un techo. Ocurrió en cada pico BTC desde 2011.<br><br>Actualmente el MA 111 está al <strong style="color:var(--btc)">51.4%</strong>.',
+historical_acc:'PRECISIÓN HISTÓRICA',signal_correct:'✓ Señal correcta',current:'2025/26 – Actual',no_signal:'⏳ Sin señal (Alcista)',
+disclaimer:'Aviso Legal',
+disclaimer_text:'π = 3.14159265 · NO ES ASESORAMIENTO FINANCIERO · DYOR<br><br>Todos los datos y análisis son solo para fines informativos y educativos. No constituyen asesoramiento financiero. Las criptomonedas son altamente volátiles.',
+footer:'π = 3.14159265 · NO ASESORAMIENTO FINANCIERO · DYOR · Análisis Matemático Pro v3.0 · 2026',
+ticker:['SEC aprueba acuerdo Ripple · XRP +4.2% · Hito histórico cripto','Ripple ODL: 12 nuevos mercados · Volumen XRP +340% · Asia & África','SEC revisa marco activos digitales · Flujos ETF BTC fuertes','BlackRock BTC ETF: $2.3B en una semana','Congreso EE.UU.: Proyecto bipartidista protege XRP','HBAR: 3 bancos centrales eligen Hedera para piloto CBDC','🥇 ORO $3.312 · Nuevo máximo histórico','🥈 PLATA $32.48 · Ratio Oro/Plata 102:1 · Objetivo $50+'],
+news_data:[
+{src:'bb',tags:['SEC XRP'],time:'hace 12 min',h:'Juez SEC aprueba acuerdo final de Ripple en demanda XRP',s:'Un juez federal de EE.UU. aprobó el acuerdo SEC-Ripple. Multa reducida, XRP no es valor en ventas minoristas.',imp:'h'},
+{src:'re',tags:['XRP','ISO 20022'],time:'hace 28 min',h:'Ripple ODL se expande a 12 nuevos mercados – Volumen XRP +340%',s:'On-Demand Liquidity de Ripple se expandió a 12 nuevos mercados en Asia y África.',imp:'h'},
+{src:'cd',tags:['SEC XRP','BTC'],time:'hace 45 min',h:'SEC revisa Marco de Activos Digitales tras acuerdo Ripple',s:'La SEC está revisando su marco regulatorio para activos digitales.',imp:'h'},
+{src:'bb',tags:['BTC'],time:'hace 1 h',h:'BlackRock Bitcoin ETF: $2.3B de entradas netas en una semana',s:'El ETF Bitcoin de BlackRock registró sus segundas mayores entradas semanales desde el lanzamiento.',imp:'h'},
+{src:'re',tags:['SEC XRP'],time:'hace 2 h',h:'Proyecto bipartidista de EE.UU. excluye explícitamente a XRP de la definición de valores',s:'Un nuevo proyecto bipartidista en la Cámara excluiría tokens de pago como XRP de la definición de valores.',imp:'m'},
+{src:'cd',tags:['ISO 20022','HBAR'],time:'hace 3 h',h:'Hedera seleccionado por tres bancos centrales para piloto CBDC',s:'Tres bancos centrales en Asia-Pacífico seleccionaron Hedera Hashgraph para pilotos CBDC.',imp:'m'},
+{src:'bb',tags:['Gold'],time:'hace 4 h',h:'Oro alcanza nuevo máximo histórico – bancos centrales compran a ritmo récord',s:'El oro subió a $3.312/oz. Los bancos centrales compraron la mayor cantidad de oro desde 1967.',imp:'h'},
+{src:'re',tags:['Gold','Silver'],time:'hace 5 h',h:'Ratio Oro/Plata en 102:1 – los analistas ven enorme potencial alcista para la plata',s:'El ratio oro/plata de 102:1 es históricamente extremo. La normalización a 65:1 pondría la plata por encima de $50.',imp:'h'},
+{src:'cd',tags:['Gold','BTC'],time:'hace 6 h',h:'Bitcoin y Oro muestran la correlación más alta desde 2020',s:'La correlación de 90 días entre BTC y Oro alcanzó 0.62, la más alta desde 2020.',imp:'m'},
+{src:'bb',tags:['XRP','BTC'],time:'hace 7 h',h:'JPMorgan: Portafolio cripto con XRP y BTC supera activos tradicionales en 38%',s:'Un nuevo estudio de JPMorgan muestra que portafolios mixtos superan significativamente bonos e índices.',imp:'m'},
+{src:'re',tags:['BTC'],time:'hace 8 h',h:'El Salvador agrega 30 BTC más a las reservas estatales',s:'El Salvador continuó acumulando reservas de Bitcoin. Visto como modelo para otras naciones.',imp:'l'},
+{src:'cd',tags:['ISO 20022','XLM'],time:'hace 9 h',h:'Stellar SDF anuncia integración SWIFT GPI para conformidad total ISO 20022',s:'La Stellar Development Foundation integra SWIFT GPI para compatibilidad ISO 20022 completa.',imp:'m'},
+],
+toasts:['⚡ XRP ETF – La SEC debe responder en 45 días','📈 XRP/USD rompe $1.50 · Próximo objetivo $1.80','🏛 QNT: Asociación con gran banco anunciada','🔥 BTC: Demanda institucional en máximo de 3 años','🌐 ISO 20022: Todos los bancos centrales G20 migrados para 2026','📊 HBAR: Consejo se expande a 40 miembros','🥇 Compras de oro de bancos centrales en máximo 55 años','🥈 Demanda industrial de plata aumenta · Solar +42%'],
+},
+ZH:{
+hdr_title:'数学市场分析',
+hdr_sub:'BTC · XRP · SOL · XLM · HBAR · 黄金 · 白银 · S&P · 原油 · ISO 20022',
+live:'实时',live_sm:'实时',
+nav_dash:'仪表板',nav_oil:'🛢 原油',nav_gold:'🥇 黄金',nav_silver:'🥈 白银',nav_iso:'ISO 20022 ✓',nav_news:'📰 快讯',nav_pf:'投资组合',nav_waves:'📊 波浪指南',nav_how:'工作原理',
+signal_title:'π 市场信号',signal_sub:'加权实时计算 · 月线蜡烛图',
+bullish:'看涨',bearish:'看跌',pi_score:'Pi 得分',confidence:'置信度',
+signal_breakdown:'信号分解',autorefresh:'自动刷新 · 下次更新',
+market_indicator:'市场位置指标',tf_active:'活跃时间框架:',data_basis:'数据基础：月线蜡烛图',
+tf_1w:'1周',tf_1m:'1月',tf_3m:'3月',tf_1y:'1年',tf_4y:'4年',
+ph_bottom:'底部',ph_build:'积累',ph_ath:'历史高点',ph_corr:'回调',
+live_prices:'实时价格',drawdown:'回撤对比 (%)',monthly_struct:'月线 & 4小时结构',
+elliott:'艾略特波浪',zone_4h:'4小时区域',
+target:'目标',m_mid:'月线中点',m_floor:'月线底部',m_support:'月线支撑',m_resist:'月线阻力',
+support:'支撑',resist:'阻力',invalid:'无效',wave_target:'波浪目标',
+sec_status:'SEC状态',settled:'✓ 已和解',iso_status:'ISO状态',certified:'已认证',
+gov_council:'理事会',cbdc_pilots:'CBDC试点',cbdc_3banks:'3家央行',
+btc_corr:'BTC相关性',gold_corr:'黄金相关性',gs_ratio:'金银比',
+trend_score:'趋势得分',drivers:'驱动因素',risks:'风险',
+far_top:'远离顶部',near_top:'接近顶部',result:'结果',
+btc_ma_title:'MA比率指标（月线）',
+btc_ma_desc:'MA比率目前处于周期顶部交叉的51.4%。历史上，当111日MA突破350×2日MA时，周期顶部随之而来。我们还远未到那个信号——看涨信号。',
+xrp_legal:'SEC XRP 法律状态',
+xrp_legal_desc:'SEC与Ripple的案件于2024年和解。美国联邦法官裁定向散户销售的XRP不是证券。',
+xrp_result_list:'✓ 非证券（散户）<br>✓ 和解获批<br>✓ 美国交易所重启<br>✓ Ripple ETF审查中',
+xrp_iso_list:'✓ 完全合规<br>✓ 300+银行合作伙伴<br>✓ ODL网络<br>✓ SWIFT整合',
+oil_title:'原油 (WTI)',oil_wave:'C浪可能',
+gold_title:'黄金 (XAU/USD)',gold_spot:'黄金现货',gold_wave:'第3浪延伸',
+gold_analysis:'黄金市场分析',
+gold_desc:'黄金正处于强劲牛市，由央行创纪录购买、地缘政治不确定性和实际利率下降推动。第3浪目标$3,600–$4,000。',
+gold_drivers:'🏦 央行创纪录购买<br>📉 实际利率下降<br>🌍 地缘政治·美元疲软<br>💹 机构配置<br>🔄 全球去美元化',
+gold_risks:'⚠ 美元走强可能<br>📈 美联储加息<br>📉 风险偏好回归<br>🔻 短期超买<br>💱 ETF资金流出可能',
+silver_title:'白银 (XAG/USD)',silver_spot:'白银现货',silver_wave:'第3浪初期',
+silver_analysis:'白银市场分析',
+silver_desc:'白银历史上滞后黄金，随后表现更为强劲。102:1的金银比率处于历史极端水平——白银相对黄金严重被低估。',
+ratio_history:'金银比率历史',
+silver_ratio_content:'📊 历史平均: ~65:1<br>📊 当前: 102:1（白银严重低估）<br>🎯 恢复至70:1 → 白银约$47<br>🎯 恢复至50:1 → 白银约$66<br>⚡ 白银在牛市峰值超过黄金',
+iso_title:'ISO 20022认证币种',iso_prices:'ISO 20022实时价格',
+iso_intro:'ISO 20022是金融领域电子数据交换的国际标准（SWIFT、央行、SEPA）。这些加密货币被官方认可为符合ISO 20022标准。',
+iso_advantages:'ISO 20022优势和应用',advantages:'✓ 优势',use_cases:'应用场景',
+iso_advs_list:'· 银行兼容性<br>· SWIFT整合<br>· 央行就绪<br>· 监管合规<br>· 富数据消息<br>· 实时结算<br>· 机构采用',
+iso_uses_list:'· 跨境支付<br>· CBDC基础设施<br>· 贸易融资<br>· 供应链金融<br>· DeFi/TradFi桥梁<br>· 多资产转移<br>· 企业财务',
+news_title:'📰 快讯 – SEC XRP · BTC · 黄金 · ISO 20022',
+news_sub:'彭博社 · 路透社 · CoinDesk · 实时监控',live_feed:'实时',
+news_chips:['全部来源','彭博社','路透社','COINDESK','SEC XRP','BTC','ISO 20022','🥇 黄金','🥈 白银'],
+imp_h:'高',imp_m:'中',imp_l:'低',
+pf_title:'投资组合 – ISO 20022配置',
+pf_sub:'基于趋势得分、艾略特波浪和ISO 20022合规性的建议权重',
+pf_disc:'⚠ 非投资建议 · DYOR · 分散化至关重要',
+pf_perf:'投资组合表现 vs. S&P 500',pf_iso_lbl:'ISO 20022投资组合（YTD）',pf_btc_lbl:'仅BTC（YTD）',
+how_title:'指标如何工作？',principle:'基本原理',signal:'信号',
+how_principle:'该指标使用两条移动平均线：<br><br>• <strong style="color:var(--purple)">111日均线</strong> – 短期均线<br>• <strong style="color:var(--green)">350日均线 × 2</strong> – 长期均线翻倍<br><br>比率350÷111≈3.153≈<strong style="color:var(--purple)">π=3.14159...</strong>',
+how_signal:'当111日均线<strong style="color:var(--red)">向上穿越</strong>350×2均线时，历史上预示周期顶部。自2011年以来每个BTC周期顶部都出现这一现象。<br><br>目前111均线处于<strong style="color:var(--btc)">51.4%</strong>。',
+historical_acc:'历史准确性',signal_correct:'✓ 信号正确',current:'2025/26 – 当前',no_signal:'⏳ 无信号（看涨）',
+disclaimer:'免责声明',
+disclaimer_text:'π = 3.14159265 · 非投资建议 · DYOR<br><br>所有数据、分析和信号仅供教育和信息目的。不构成财务建议。加密货币是高波动性资产。',
+footer:'π = 3.14159265 · 非投资建议 · DYOR · 数学市场分析 Pro v3.0 · 2026',
+ticker:['SEC法官批准Ripple和解 · XRP +4.2% · 加密监管历史性突破','Ripple ODL扩展至12个新市场 · XRP成交量+340%','SEC修订数字资产框架 · BTC ETF资金流入强劲','贝莱德BTC ETF: 一周净流入$23亿','美国国会：两党法案保护XRP','HBAR: 3家央行选择Hedera进行CBDC试点','🥇 黄金$3,312 · 历史新高 · 央行创纪录购买','🥈 白银$32.48 · 金银比率102:1 · 目标$50+'],
+news_data:[
+{src:'bb',tags:['SEC XRP'],time:'12分钟前',h:'SEC法官批准Ripple在XRP诉讼中的最终和解协议',s:'美国联邦法官批准了SEC-Ripple和解协议。罚款减少，XRP在零售销售中不被视为证券。',imp:'h'},
+{src:'re',tags:['XRP','ISO 20022'],time:'28分钟前',h:'Ripple ODL扩展至12个新市场 – XRP交易量+340%',s:'Ripple的按需流动性扩展到亚洲和非洲的12个新市场。',imp:'h'},
+{src:'cd',tags:['SEC XRP','BTC'],time:'45分钟前',h:'Ripple和解后SEC全面修订数字资产框架',s:'美国证交会正在修订其数字资产监管框架。',imp:'h'},
+{src:'bb',tags:['BTC'],time:'1小时前',h:'贝莱德比特币ETF: 一周净流入23亿美元',s:'贝莱德的比特币ETF（IBIT）创下自推出以来第二大单周流入。',imp:'h'},
+{src:'re',tags:['SEC XRP'],time:'2小时前',h:'美国两党法案明确将XRP排除在证券定义之外',s:'美国众议院的新两党法案将明确把XRP等支付代币排除在证券定义之外。',imp:'m'},
+{src:'cd',tags:['ISO 20022','HBAR'],time:'3小时前',h:'三家央行选择Hedera进行CBDC试点',s:'亚太地区三家央行选择Hedera Hashgraph进行CBDC试点。',imp:'m'},
+{src:'bb',tags:['Gold'],time:'4小时前',h:'黄金创历史新高 – 央行以创纪录的速度购买',s:'黄金价格升至每盎司3,312美元。央行购买了自1967年以来最大量的黄金。',imp:'h'},
+{src:'re',tags:['Gold','Silver'],time:'5小时前',h:'金银比率达到102:1 – 分析师看到白银巨大上行潜力',s:'金银比率102:1处于历史极端水平。恢复至65:1将使白银超过50美元。',imp:'h'},
+{src:'cd',tags:['Gold','BTC'],time:'6小时前',h:'比特币和黄金显示出自2020年以来最高的相关性',s:'BTC与黄金的90天相关性达到0.62，自2020年以来最高。',imp:'m'},
+{src:'bb',tags:['XRP','BTC'],time:'7小时前',h:'摩根大通：含XRP和BTC的加密投资组合超越传统资产38%',s:'摩根大通新研究表明，混合投资组合显著超越债券和股票指数。',imp:'m'},
+{src:'re',tags:['BTC'],time:'8小时前',h:'萨尔瓦多再增加30个BTC到国家储备',s:'萨尔瓦多继续累积比特币储备。被视为其他国家的典范。',imp:'l'},
+{src:'cd',tags:['ISO 20022','XLM'],time:'9小时前',h:'Stellar SDF宣布SWIFT GPI集成以实现完整的ISO 20022合规',s:'Stellar发展基金会集成SWIFT GPI以实现XLM交易的完整ISO 20022兼容性。',imp:'m'},
+],
+toasts:['⚡ XRP ETF – SEC必须在45天内回应','📈 XRP/USD突破1.50美元 · 下一目标$1.80','🏛 QNT: 与大型银行合作宣布','🔥 BTC: 机构需求达到3年高位','🌐 ISO 20022: 所有G20央行2026年前完成迁移','📊 HBAR: 委员会扩展至40名成员','🥇 央行黄金购买达55年高位 · 目标$4,000','🥈 白银工业需求激增 · 太阳能+42%'],
+},
+BR:{
+hdr_title:'Análise Matemática do Mercado',
+hdr_sub:'BTC · XRP · SOL · XLM · HBAR · Ouro · Prata · S&P · Petróleo · ISO 20022',
+live:'AO VIVO',live_sm:'Ao vivo',
+nav_dash:'Painel',nav_oil:'🛢 Petróleo',nav_gold:'🥇 Ouro',nav_silver:'🥈 Prata',nav_iso:'ISO 20022 ✓',nav_news:'📰 Alertas',nav_pf:'Portfólio',nav_waves:'📊 Guia de Ondas',nav_how:'Como funciona',
+signal_title:'π SINAL DE MERCADO',signal_sub:'Cálculo ponderado ao vivo · Candles mensais',
+bullish:'ALTISTA',bearish:'BAIXISTA',pi_score:'Pontuação Pi',confidence:'Confiança',
+signal_breakdown:'Análise do sinal',autorefresh:'Auto-atualização · Próxima em',
+market_indicator:'Indicador de Posição de Mercado',tf_active:'Período ativo:',data_basis:'Base de dados: candles mensais',
+tf_1w:'1 Semana',tf_1m:'1 Mês',tf_3m:'3 Meses',tf_1y:'1 Ano',tf_4y:'4 Anos',
+ph_bottom:'Mínimo',ph_build:'Acumulação',ph_ath:'ATH',ph_corr:'Correção',
+live_prices:'Preços ao vivo',drawdown:'Comparação de queda (%)',monthly_struct:'Estrutura mensal & 4H',
+elliott:'Onda de Elliott',zone_4h:'Zona 4H',
+target:'Alvo',m_mid:'Meio mensal',m_floor:'Piso mensal',m_support:'Suporte mensal',m_resist:'Resistência mensal',
+support:'Suporte',resist:'Resistência',invalid:'Invalidação',wave_target:'Alvo da onda',
+sec_status:'Status SEC',settled:'✓ Resolvido',iso_status:'Status ISO',certified:'Certificado',
+gov_council:'Conselho Governante',cbdc_pilots:'Pilotos CBDC',cbdc_3banks:'3 Bancos Centrais',
+btc_corr:'Correlação BTC',gold_corr:'Correlação Ouro',gs_ratio:'Ratio Ouro/Prata',
+trend_score:'Pontuação tendência',drivers:'IMPULSORES',risks:'RISCOS',
+far_top:'Longe do topo',near_top:'Perto do topo',result:'RESULTADO',
+btc_ma_title:'Indicador Ratio MA (Mensal)',
+btc_ma_desc:'O ratio MA está em 51.4% do caminho para um cruzamento de topo. Historicamente, quando o MA 111 dias cruza o MA 350×2, segue um pico. Ainda estamos longe – sinal altista.',
+xrp_legal:'Status legal SEC XRP',
+xrp_legal_desc:'O caso SEC vs. Ripple foi resolvido em 2024. Um juiz federal decidiu que XRP NÃO é um valor mobiliário no varejo.',
+xrp_result_list:'✓ Não é valor mobiliário (Varejo)<br>✓ Acordo aprovado<br>✓ Bolsas dos EUA reativadas<br>✓ ETF Ripple em análise',
+xrp_iso_list:'✓ Totalmente conforme<br>✓ 300+ parceiros bancários<br>✓ Rede ODL<br>✓ Integração SWIFT',
+oil_title:'Petróleo Bruto (WTI)',oil_wave:'Onda C possível',
+gold_title:'Ouro (XAU/USD)',gold_spot:'OURO SPOT',gold_wave:'Onda 3 Estendida',
+gold_analysis:'Análise do Ouro',
+gold_desc:'O ouro está em forte mercado altista impulsionado por compras recordes de bancos centrais. Onda 3 com alvo $3.600–$4.000.',
+gold_drivers:'🏦 Compras recordes BCs<br>📉 Queda das taxas reais<br>🌍 Geopolítica · Fraqueza USD<br>💹 Alocação institucional<br>🔄 Des-dolarização global',
+gold_risks:'⚠ Fortalecimento USD possível<br>📈 Aumento juros Fed<br>📉 Retorno apetite risco<br>🔻 Sobrecomprado c/p<br>💱 Saídas ETF possíveis',
+silver_title:'Prata (XAG/USD)',silver_spot:'PRATA SPOT',silver_wave:'Onda 3 Inicial',
+silver_analysis:'Análise da Prata',
+silver_desc:'A prata historicamente segue o ouro com atraso e move muito mais forte. Ratio ouro/prata 102:1 é extremo – prata muito subvalorizada.',
+ratio_history:'RATIO OURO/PRATA HISTÓRICO',
+silver_ratio_content:'📊 Média histórica: ~65:1<br>📊 Atual: 102:1 (Prata muito subvalorizada)<br>🎯 Normalização para 70:1 → Prata ~$47<br>🎯 Normalização para 50:1 → Prata ~$66<br>⚡ Prata supera ouro no pico do mercado altista',
+iso_title:'Criptomoedas ISO 20022',iso_prices:'Preços ISO 20022 ao vivo',
+iso_intro:'ISO 20022 é o padrão internacional para intercâmbio eletrônico de dados financeiros. Estas criptomoedas são oficialmente reconhecidas como compatíveis.',
+iso_advantages:'Vantagens ISO 20022 e casos de uso',advantages:'✓ VANTAGENS',use_cases:'CASOS DE USO',
+iso_advs_list:'· Compatibilidade bancária<br>· Integração SWIFT<br>· Pronto para BC<br>· Conformidade regulatória<br>· Mensagens dados ricos<br>· Liquidação tempo real<br>· Adoção institucional',
+iso_uses_list:'· Pagamentos transfronteiriços<br>· Infraestrutura CBDC<br>· Financiamento comercial<br>· Cadeia de suprimentos<br>· Ponte DeFi/TradFi<br>· Transferências multi-ativo<br>· Tesouraria corporativa',
+news_title:'📰 Alertas – SEC XRP · BTC · Ouro · ISO 20022',
+news_sub:'Bloomberg · Reuters · CoinDesk · Monitoramento em tempo real',live_feed:'Ao vivo',
+news_chips:['TODAS FONTES','BLOOMBERG','REUTERS','COINDESK','SEC XRP','BTC','ISO 20022','🥇 Ouro','🥈 Prata'],
+imp_h:'ALTO',imp_m:'MÉDIO',imp_l:'BAIXO',
+pf_title:'Portfólio – Alocação ISO 20022',
+pf_sub:'Ponderação sugerida com base na Pontuação, Onda Elliott e conformidade ISO 20022',
+pf_disc:'⚠ Não é consultoria financeira · DYOR · A diversificação é essencial',
+pf_perf:'Desempenho do portfólio vs. S&P 500',pf_iso_lbl:'Portfólio ISO 20022 (YTD)',pf_btc_lbl:'Apenas BTC (YTD)',
+how_title:'Como funciona o indicador?',principle:'O PRINCÍPIO',signal:'O SINAL',
+how_principle:'O indicador usa duas médias móveis:<br><br>• <strong style="color:var(--purple)">MM 111 dias</strong> – média curto prazo<br>• <strong style="color:var(--green)">MM 350 dias × 2</strong> – média longo prazo dobrada<br><br>A razão 350÷111 ≈ 3.153 ≈ <strong style="color:var(--purple)">π = 3.14159...</strong>',
+how_signal:'Quando o MA 111 dias cruza <strong style="color:var(--red)">acima</strong> do MA 350×2, sinaliza historicamente um topo. Ocorreu em cada pico BTC desde 2011.<br><br>Atualmente o MA 111 está em <strong style="color:var(--btc)">51.4%</strong>.',
+historical_acc:'PRECISÃO HISTÓRICA',signal_correct:'✓ Sinal correto',current:'2025/26 – Atual',no_signal:'⏳ Sem sinal (Altista)',
+disclaimer:'Aviso Legal',
+disclaimer_text:'π = 3.14159265 · NÃO É CONSULTORIA FINANCEIRA · DYOR<br><br>Todos os dados são apenas para fins informativos. Não constituem aconselhamento financeiro.',
+footer:'π = 3.14159265 · NÃO CONSULTORIA FINANCEIRA · DYOR · Análise Matemática Pro v3.0 · 2026',
+ticker:['SEC aprova acordo Ripple · XRP +4.2% · Marco histórico cripto','Ripple ODL: 12 novos mercados · Volume XRP +340%','SEC revisa framework de ativos digitais · Fluxos ETF BTC fortes','BlackRock BTC ETF: $2.3B em uma semana','Congresso EUA: Projeto bipartidário protege XRP','HBAR: 3 BCs escolhem Hedera para piloto CBDC','🥇 OURO $3.312 · Novo ATH','🥈 PRATA $32.48 · Ratio 102:1 · Alvo $50+'],
+news_data:[
+{src:'bb',tags:['SEC XRP'],time:'há 12 min',h:'Juiz da SEC aprova acordo final da Ripple no processo XRP',s:'Um juiz federal aprovou o acordo SEC-Ripple. Multa reduzida, XRP não é valor mobiliário no varejo.',imp:'h'},
+{src:'re',tags:['XRP','ISO 20022'],time:'há 28 min',h:'Ripple ODL expande para 12 novos mercados – Volume XRP +340%',s:'On-Demand Liquidity da Ripple expandiu para 12 novos mercados na Ásia e África.',imp:'h'},
+{src:'cd',tags:['SEC XRP','BTC'],time:'há 45 min',h:'SEC revisa framework de ativos digitais após acordo Ripple',s:'A SEC está revisando seu framework regulatório para ativos digitais.',imp:'h'},
+{src:'bb',tags:['BTC'],time:'há 1 h',h:'BlackRock Bitcoin ETF: $2.3B em entradas líquidas em uma semana',s:'O ETF Bitcoin da BlackRock registrou suas segundas maiores entradas semanais.',imp:'h'},
+{src:'re',tags:['SEC XRP'],time:'há 2 h',h:'Projeto bipartidário dos EUA exclui explicitamente XRP da definição de valores',s:'Um novo projeto bipartidário excluiria tokens de pagamento como XRP da definição de valores.',imp:'m'},
+{src:'cd',tags:['ISO 20022','HBAR'],time:'há 3 h',h:'Hedera selecionado por três bancos centrais para piloto CBDC',s:'Três bancos centrais na Ásia-Pacífico selecionaram Hedera Hashgraph para pilotos CBDC.',imp:'m'},
+{src:'bb',tags:['Gold'],time:'há 4 h',h:'Ouro atinge novo máximo histórico – bancos centrais comprando em ritmo recorde',s:'O ouro subiu para $3.312/oz. Bancos centrais compraram a maior quantidade de ouro desde 1967.',imp:'h'},
+{src:'re',tags:['Gold','Silver'],time:'há 5 h',h:'Ratio Ouro/Prata em 102:1 – analistas veem enorme potencial para a prata',s:'O ratio ouro/prata de 102:1 é historicamente extremo. Normalização para 65:1 colocaria a prata acima de $50.',imp:'h'},
+{src:'cd',tags:['Gold','BTC'],time:'há 6 h',h:'Bitcoin e Ouro mostram correlação mais alta desde 2020',s:'A correlação de 90 dias entre BTC e Ouro atingiu 0.62, a mais alta desde 2020.',imp:'m'},
+{src:'bb',tags:['XRP','BTC'],time:'há 7 h',h:'JPMorgan: Portfólio cripto com XRP e BTC supera ativos tradicionais em 38%',s:'Um novo estudo do JPMorgan mostra que portfólios mistos superam significativamente índices.',imp:'m'},
+{src:'re',tags:['BTC'],time:'há 8 h',h:'El Salvador adiciona mais 30 BTC às reservas estatais',s:'El Salvador continuou acumulando reservas de Bitcoin. Visto como modelo para outras nações.',imp:'l'},
+{src:'cd',tags:['ISO 20022','XLM'],time:'há 9 h',h:'Stellar SDF anuncia integração SWIFT GPI para conformidade total ISO 20022',s:'A Stellar Development Foundation integra SWIFT GPI para compatibilidade ISO 20022 completa.',imp:'m'},
+],
+toasts:['⚡ XRP ETF – SEC deve responder em 45 dias','📈 XRP/USD rompe $1.50 · Próximo alvo $1.80','🏛 QNT: Parceria com grande banco anunciada','🔥 BTC: Demanda institucional em máxima de 3 anos','🌐 ISO 20022: Todos os BCs do G20 migrados até 2026','📊 HBAR: Conselho expande para 40 membros','🥇 Compras de ouro de BCs em máxima de 55 anos','🥈 Demanda industrial de prata aumenta · Solar +42%'],
+},
+RU:{
+hdr_title:'Математический Анализ Рынка',
+hdr_sub:'BTC · XRP · SOL · XLM · HBAR · Золото · Серебро · S&P · Нефть · ISO 20022',
+live:'В ЭФИРЕ',live_sm:'Онлайн',
+nav_dash:'Панель',nav_oil:'🛢 Нефть',nav_gold:'🥇 Золото',nav_silver:'🥈 Серебро',nav_iso:'ISO 20022 ✓',nav_news:'📰 Оповещения',nav_pf:'Портфель',nav_waves:'📊 Гид по волнам',nav_how:'Как это работает',
+signal_title:'π РЫНОЧНЫЙ СИГНАЛ',signal_sub:'Взвешенный расчёт в реальном времени · Месячные свечи',
+bullish:'БЫЧИЙ',bearish:'МЕДВЕЖИЙ',pi_score:'Pi Оценка',confidence:'Уверенность',
+signal_breakdown:'Разбивка сигнала',autorefresh:'Авто-обновление · Следующее через',
+market_indicator:'Индикатор позиции рынка',tf_active:'Активный таймфрейм:',data_basis:'База данных: месячные свечи',
+tf_1w:'1 Неделя',tf_1m:'1 Месяц',tf_3m:'3 Месяца',tf_1y:'1 Год',tf_4y:'4 Года',
+ph_bottom:'Дно',ph_build:'Накопление',ph_ath:'ATH',ph_corr:'Коррекция',
+live_prices:'Котировки онлайн',drawdown:'Сравнение просадок (%)',monthly_struct:'Месячная & 4H структура',
+elliott:'Волны Эллиотта',zone_4h:'Зона 4H',
+target:'Цель',m_mid:'Месячная середина',m_floor:'Месячное дно',m_support:'Месячная поддержка',m_resist:'Месячное сопротивление',
+support:'Поддержка',resist:'Сопротивление',invalid:'Инвалидация',wave_target:'Цель волны',
+sec_status:'Статус SEC',settled:'✓ Урегулировано',iso_status:'ISO Статус',certified:'Сертифицирован',
+gov_council:'Управляющий совет',cbdc_pilots:'Пилоты CBDC',cbdc_3banks:'3 Центробанка',
+btc_corr:'Корреляция BTC',gold_corr:'Корреляция с золотом',gs_ratio:'Соотношение Золото/Серебро',
+trend_score:'Оценка тренда',drivers:'ФАКТОРЫ',risks:'РИСКИ',
+far_top:'Далеко от вершины',near_top:'Близко к вершине',result:'РЕЗУЛЬТАТ',
+btc_ma_title:'Индикатор соотношения МА (Месячный)',
+btc_ma_desc:'Соотношение МА на 51.4% пути до кросс-овера. Исторически, когда 111-дневный МА пересекает 350×2 МА, следует пик цикла. Мы ещё далеко — бычий знак.',
+xrp_legal:'Правовой статус SEC XRP',
+xrp_legal_desc:'Дело SEC против Ripple урегулировано в 2024 году. Федеральный судья постановил, что XRP не является ценной бумагой при продаже розничным инвесторам.',
+xrp_result_list:'✓ Не ценная бумага (Розница)<br>✓ Соглашение утверждено<br>✓ Биржи США реактивированы<br>✓ ETF на Ripple на рассмотрении',
+xrp_iso_list:'✓ Полностью соответствует<br>✓ 300+ банков-партнёров<br>✓ Сеть ODL<br>✓ Интеграция SWIFT',
+oil_title:'Сырая нефть (WTI)',oil_wave:'Волна C возможна',
+gold_title:'Золото (XAU/USD)',gold_spot:'СПОТОВАЯ ЦЕНА',gold_wave:'Волна 3 Расширенная',
+gold_analysis:'Анализ рынка золота',
+gold_desc:'Золото в сильном бычьем рынке, обусловленном рекордными покупками ЦБ, геополитической неопределённостью и снижением реальных ставок. Волна 3 с целью $3 600–$4 000.',
+gold_drivers:'🏦 Рекордные покупки ЦБ<br>📉 Снижение реальных ставок<br>🌍 Геополитика · Слабость USD<br>💹 Институциональное распределение<br>🔄 Глобальная дедолларизация',
+gold_risks:'⚠ Возможное укрепление USD<br>📈 Повышение ставок ФРС<br>📉 Возврат аппетита к риску<br>🔻 Краткосрочная перекупленность<br>💱 Возможный отток из ETF',
+silver_title:'Серебро (XAG/USD)',silver_spot:'СЕРЕБРО СПОТ',silver_wave:'Волна 3 Ранняя',
+silver_analysis:'Анализ рынка серебра',
+silver_desc:'Серебро исторически отстаёт от золота, затем движется значительно сильнее. Соотношение 102:1 экстремально — серебро массово недооценено.',
+ratio_history:'ИСТОРИЯ СООТНОШЕНИЯ ЗОЛОТО/СЕРЕБРО',
+silver_ratio_content:'📊 Исторический средний: ~65:1<br>📊 Текущий: 102:1 (Серебро сильно недооценено)<br>🎯 Нормализация до 70:1 → Серебро ~$47<br>🎯 Нормализация до 50:1 → Серебро ~$66<br>⚡ Серебро превосходит золото на пике бычьего рынка',
+iso_title:'Сертифицированные монеты ISO 20022',iso_prices:'Котировки ISO 20022 онлайн',
+iso_intro:'ISO 20022 — международный стандарт электронного обмена данными в финансах (SWIFT, ЦБ, SEPA). Эти криптовалюты официально признаны соответствующими ISO 20022.',
+iso_advantages:'Преимущества ISO 20022 и сценарии',advantages:'✓ ПРЕИМУЩЕСТВА',use_cases:'СЦЕНАРИИ',
+iso_advs_list:'· Совместимость с банками<br>· Интеграция SWIFT<br>· Готовность для ЦБ<br>· Регуляторное соответствие<br>· Богатый обмен данными<br>· Расчёты в реальном времени<br>· Институциональное принятие',
+iso_uses_list:'· Трансграничные платежи<br>· CBDC-инфраструктура<br>· Торговое финансирование<br>· Финансирование цепочки поставок<br>· Мост DeFi/TradFi<br>· Переводы нескольких активов<br>· Корпоративное казначейство',
+news_title:'📰 Оповещения – SEC XRP · BTC · Золото · ISO 20022',
+news_sub:'Bloomberg · Reuters · CoinDesk · Мониторинг в реальном времени',live_feed:'В эфире',
+news_chips:['ВСЕ ИСТОЧНИКИ','BLOOMBERG','REUTERS','COINDESK','SEC XRP','BTC','ISO 20022','🥇 Золото','🥈 Серебро'],
+imp_h:'ВЫСОКИЙ',imp_m:'СРЕДНИЙ',imp_l:'НИЗКИЙ',
+pf_title:'Портфель – Аллокация ISO 20022',
+pf_sub:'Рекомендуемое распределение на основе оценки тренда, волн Эллиотта и соответствия ISO 20022',
+pf_disc:'⚠ Не финансовый совет · DYOR · Диверсификация необходима',
+pf_perf:'Эффективность портфеля vs. S&P 500',pf_iso_lbl:'Портфель ISO 20022 (с нач. года)',pf_btc_lbl:'Только BTC (с нач. года)',
+how_title:'Как работает индикатор?',principle:'ПРИНЦИП',signal:'СИГНАЛ',
+how_principle:'Индикатор использует две скользящие средние:<br><br>• <strong style="color:var(--purple)">111-дневная СС</strong> — краткосрочная<br>• <strong style="color:var(--green)">350-дневная СС × 2</strong> — долгосрочная удвоенная<br><br>Соотношение 350÷111≈3.153≈<strong style="color:var(--purple)">π=3.14159...</strong>',
+how_signal:'Когда 111-дневная СС пересекает 350×2 СС <strong style="color:var(--red)">снизу вверх</strong>, это исторически сигнализирует о вершине цикла. Происходило на каждом пике BTC с 2011.<br><br>Сейчас 111-СС на <strong style="color:var(--btc)">51.4%</strong>.',
+historical_acc:'ИСТОРИЧЕСКАЯ ТОЧНОСТЬ',signal_correct:'✓ Сигнал верный',current:'2025/26 – Сейчас',no_signal:'⏳ Нет сигнала (Бычий)',
+disclaimer:'Отказ от ответственности',
+disclaimer_text:'π = 3.14159265 · НЕ ЯВЛЯЕТСЯ ФИНАНСОВЫМ СОВЕТОМ · DYOR<br><br>Все данные предназначены исключительно для образовательных целей. Криптовалюты — высоковолатильные активы.',
+footer:'π = 3.14159265 · НЕ ФИНАНСОВЫЙ СОВЕТ · DYOR · Математический Анализ Рынка Pro v3.0 · 2026',
+ticker:['Судья одобрил соглашение SEC с Ripple · XRP +4.2% · Исторический прорыв','Ripple ODL: 12 новых рынков · Объём XRP +340%','SEC пересматривает регуляторную базу · Притоки в ETF BTC сильные','BlackRock BTC ETF: $2.3 млрд за неделю','Конгресс США: законопроект защищает XRP','HBAR: 3 ЦБ выбрали Hedera для пилота CBDC','🥇 ЗОЛОТО $3 312 · Новый ATH','🥈 СЕРЕБРО $32.48 · Соотношение 102:1 · Цель $50+'],
+news_data:[
+{src:'bb',tags:['SEC XRP'],time:'12 мин назад',h:'Судья SEC одобрил окончательное соглашение с Ripple по делу XRP',s:'Федеральный судья США одобрил соглашение SEC-Ripple. Сокращённый штраф, XRP не считается ценной бумагой при розничных продажах.',imp:'h'},
+{src:'re',tags:['XRP','ISO 20022'],time:'28 мин назад',h:'Ripple ODL расширяется на 12 новых рынков – объём XRP +340%',s:'On-Demand Liquidity Ripple расширилась на 12 новых рынков в Азии и Африке.',imp:'h'},
+{src:'cd',tags:['SEC XRP','BTC'],time:'45 мин назад',h:'SEC пересматривает рамки цифровых активов после соглашения с Ripple',s:'SEC пересматривает свою регулятивную базу для цифровых активов.',imp:'h'},
+{src:'bb',tags:['BTC'],time:'1 ч назад',h:'BlackRock Bitcoin ETF: чистый приток $2.3 млрд за неделю',s:'Bitcoin ETF от BlackRock зафиксировал второй по величине недельный приток с момента запуска.',imp:'h'},
+{src:'re',tags:['SEC XRP'],time:'2 ч назад',h:'Двухпартийный законопроект США исключает XRP из определения ценных бумаг',s:'Новый двухпартийный законопроект Палаты представителей исключит платёжные токены, такие как XRP, из определения ценных бумаг.',imp:'m'},
+{src:'cd',tags:['ISO 20022','HBAR'],time:'3 ч назад',h:'Hedera выбрана тремя центральными банками для пилота CBDC',s:'Три центральных банка в Азиатско-Тихоокеанском регионе выбрали Hedera Hashgraph для пилотов CBDC.',imp:'m'},
+{src:'bb',tags:['Gold'],time:'4 ч назад',h:'Золото достигло нового исторического максимума – ЦБ покупают рекордными темпами',s:'Золото поднялось до $3 312 за унцию. ЦБ по всему миру купили наибольшее количество золота с 1967 года.',imp:'h'},
+{src:'re',tags:['Gold','Silver'],time:'5 ч назад',h:'Соотношение Золото/Серебро на 102:1 – аналитики видят огромный потенциал для серебра',s:'Соотношение золото/серебро 102:1 исторически экстремально. Нормализация до 65:1 поднимет серебро выше $50.',imp:'h'},
+{src:'cd',tags:['Gold','BTC'],time:'6 ч назад',h:'Биткоин и Золото показывают самую высокую корреляцию с 2020 года',s:'90-дневная корреляция между BTC и Золотом достигла 0.62, самой высокой с 2020 года.',imp:'m'},
+{src:'bb',tags:['XRP','BTC'],time:'7 ч назад',h:'JPMorgan: Криптопортфель с XRP и BTC превосходит традиционные активы на 38%',s:'Новое исследование JPMorgan показывает, что смешанные портфели значительно превосходят облигации и индексы акций.',imp:'m'},
+{src:'re',tags:['BTC'],time:'8 ч назад',h:'Сальвадор добавляет ещё 30 BTC в государственные резервы',s:'Сальвадор продолжил накапливать запасы Биткоина. Стратегия рассматривается как модель для других стран.',imp:'l'},
+{src:'cd',tags:['ISO 20022','XLM'],time:'9 ч назад',h:'Stellar SDF объявляет об интеграции SWIFT GPI для полного соответствия ISO 20022',s:'Stellar Development Foundation интегрирует SWIFT GPI для полной совместимости с ISO 20022.',imp:'m'},
+],
+toasts:['⚡ XRP ETF – SEC должна ответить в течение 45 дней','📈 XRP/USD пробивает $1.50 · Следующая цель $1.80','🏛 QNT: Объявлено партнёрство с крупным банком','🔥 BTC: Институциональный спрос на 3-летнем максимуме','🌐 ISO 20022: Все ЦБ G20 мигрируют к 2026 году','📊 HBAR: Совет расширяется до 40 членов','🥇 Покупки золота ЦБ на 55-летнем максимуме · Цель $4 000','🥈 Промышленный спрос на серебро растёт · Солнечные панели +42%'],
+}
+};
+
+// ═══════════════════════════════════════════════════
+//  STATE & DATA
+// ═══════════════════════════════════════════════════
+let lang='EN';
+let currentTF='1M';
+
+const PRICES=[
+  {sym:'BTC',fmt:'$78,259',up:true,chg:2.4,c:'var(--btc)'},
+  {sym:'XRP',fmt:'$1.4400',up:true,chg:1.8,c:'var(--xrp)'},
+  {sym:'SOL',fmt:'$86.13',up:false,chg:-0.9,c:'var(--sol)'},
+  {sym:'XLM',fmt:'$0.1756',up:true,chg:0.5,c:'var(--xlm)'},
+  {sym:'HBAR',fmt:'$0.0908',up:true,chg:1.2,c:'var(--hbar)'},
+  {sym:'XDC',fmt:'$0.0413',up:true,chg:3.1,c:'var(--xdc)'},
+  {sym:'ALGO',fmt:'$0.1847',up:true,chg:0.7,c:'var(--algo)'},
+  {sym:'QNT',fmt:'$84.20',up:true,chg:1.5,c:'var(--qnt)'},
+  {sym:'Gold',fmt:'$3,312',up:true,chg:0.8,c:'var(--gold)'},
+  {sym:'XAG',fmt:'$32.48',up:true,chg:1.3,c:'var(--silver)'},
+  {sym:'S&P',fmt:'5,342',up:true,chg:0.3,c:'var(--sp)'},
+  {sym:'Oil',fmt:'$78.40',up:false,chg:-1.1,c:'var(--oil)'},
+];
+const ISO=[
+  {sym:'XRP',name:'Ripple XRP',c:'var(--xrp)',price:'$1.4400',use:'SWIFT ODL · 300+ banks · Real-time cross-border'},
+  {sym:'XLM',name:'Stellar Lumens',c:'var(--xlm)',price:'$0.1756',use:'IBM World Wire · Stellar Network'},
+  {sym:'XDC',name:'XinFin Network',c:'var(--xdc)',price:'$0.0413',use:'Trade Finance · Supply Chain · ISO 20022 native'},
+  {sym:'ALGO',name:'Algorand',c:'var(--algo)',price:'$0.1847',use:'CBDCs · Smart Contracts · Central bank pilots'},
+  {sym:'HBAR',name:'Hedera Hashgraph',c:'var(--hbar)',price:'$0.0908',use:'Enterprise DLT · Google, IBM, Boeing · CBDC pilots'},
+  {sym:'QNT',name:'Quant Network',c:'var(--qnt)',price:'$84.20',use:'Overledger · Multi-chain bridge · Banks'},
+  {sym:'BTC',name:'Bitcoin',c:'var(--btc)',price:'$78,259',use:'Store of Value · Lightning Network'},
+];
+const STRUCT=[
+  {sym:'BTC',c:'var(--btc)',p:'$68k / $76k / $98k'},
+  {sym:'XRP',c:'var(--xrp)',p:'$1.12 / $1.43 / $2.18'},
+  {sym:'SOL',c:'var(--sol)',p:'$110 / $145 / $210'},
+  {sym:'XLM',c:'var(--xlm)',p:'$0.18 / $0.27 / $0.48'},
+  {sym:'HBAR',c:'var(--hbar)',p:'$0.12 / $0.18 / $0.34'},
+  {sym:'Gold',c:'var(--gold)',p:'$3,100 / $3,312 / $3,600'},
+  {sym:'XAG',c:'var(--silver)',p:'$29.50 / $32.48 / $38.00'},
+  {sym:'S&P',c:'var(--sp)',p:'$5,000 / $5,300 / $5,850'},
+  {sym:'Oil',c:'var(--oil)',p:'$74 / $82 / $96'},
+];
+const WAVES=[
+  {sym:'BTC',c:'var(--btc)',v:'1–5 complete · $118k'},
+  {sym:'XRP',c:'var(--xrp)',v:'1–3 developing · $2.62'},
+  {sym:'SOL',c:'var(--sol)',v:'Wave 3 active · $320'},
+  {sym:'XLM',c:'var(--xlm)',v:'Wave 2 retrace · $0.68'},
+  {sym:'HBAR',c:'var(--hbar)',v:'1–2 early · $0.48'},
+  {sym:'Gold',c:'var(--gold)',v:'Wave 3 ext. · $3,600'},
+  {sym:'XAG',c:'var(--silver)',v:'Wave 3 early · $50'},
+  {sym:'S&P',c:'var(--sp)',v:'Wave 3 active · $5,900'},
+  {sym:'Oil',c:'var(--oil)',v:'C-wave possible · $104'},
+];
+const ZONES=[
+  {sym:'BTC',l:['Impulse 72%','Retrace 38%','Inv. 28%']},
+  {sym:'XRP',l:['Impulse 81%','Retrace 44%','Inv. 31%']},
+  {sym:'SOL',l:['Impulse 85%','Retrace 46%','Inv. 33%']},
+  {sym:'XLM',l:['Impulse 79%','Retrace 41%','Inv. 30%']},
+  {sym:'HBAR',l:['Impulse 77%','Retrace 40%','Inv. 28%']},
+  {sym:'Gold',l:['Impulse 74%','Retrace 38%','Inv. $3,050']},
+  {sym:'XAG',l:['Impulse 68%','Retrace 35%','Inv. $28.00']},
+  {sym:'S&P',l:['Impulse 58%','Retrace 29%','Inv. 21%']},
+  {sym:'Oil',l:['Impulse 66%','Retrace 33%','Inv. 24%']},
+];
+const BREAKDOWN=[
+  {n:'Pi Floor Position',score:50,dir:1,w:'30%'},
+  {n:'BTC MA Crossover',score:82,dir:1,w:'25%'},
+  {n:'Monthly Candle Struct',score:17,dir:-1,w:'25%'},
+  {n:'Pi Cycle Range Pos.',score:92,dir:1,w:'20%'},
+];
+const DRAW=[
+  {p:'2014/18',b:85,x:96,s:57},{p:'2018/19',b:84,x:94,s:20},
+  {p:'2022',b:77,x:80,s:25},{p:'2025/26',b:40,x:61,s:14},
+];
+const PF=[
+  {sym:'XRP',alloc:30,c:'var(--xrp)',chg:'+1.8%',up:true},
+  {sym:'BTC',alloc:25,c:'var(--btc)',chg:'+2.4%',up:true},
+  {sym:'HBAR',alloc:15,c:'var(--hbar)',chg:'+1.2%',up:true},
+  {sym:'XLM',alloc:12,c:'var(--xlm)',chg:'+0.5%',up:true},
+  {sym:'Gold',alloc:10,c:'var(--gold)',chg:'+0.8%',up:true},
+  {sym:'QNT',alloc:5,c:'var(--qnt)',chg:'+1.5%',up:true},
+  {sym:'XDC',alloc:3,c:'var(--xdc)',chg:'+3.1%',up:true},
+];
+
+// Sine wave config per timeframe
+const TF_CONFIG={
+  '1W':{btc:{ph:0.42,amp:0.58},xrp:{ph:0.48,amp:0.62},sp:{ph:0.45,amp:0.40},gold:{ph:0.50,amp:0.55}},
+  '1M':{btc:{ph:0.60,amp:0.82},xrp:{ph:0.52,amp:0.70},sp:{ph:0.38,amp:0.45},gold:{ph:0.56,amp:0.62}},
+  '3M':{btc:{ph:0.65,amp:0.88},xrp:{ph:0.58,amp:0.78},sp:{ph:0.42,amp:0.50},gold:{ph:0.62,amp:0.72}},
+  '1Y':{btc:{ph:0.72,amp:0.92},xrp:{ph:0.65,amp:0.85},sp:{ph:0.48,amp:0.60},gold:{ph:0.70,amp:0.82}},
+  '4Y':{btc:{ph:0.78,amp:0.95},xrp:{ph:0.72,amp:0.92},sp:{ph:0.55,amp:0.70},gold:{ph:0.74,amp:0.88}},
+};
+
+// ═══════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════
+function applyLang(){
+  const L=T[lang]||T.EN;
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const k=el.getAttribute('data-i');
+    if(L[k]!==undefined) el.innerHTML=L[k];
+  });
+  document.title=L.hdr_title||'Mathematical Market Analysis';
+  // Update timeframe label
+  const tfLbl=document.getElementById('tf-label');
+  if(tfLbl) tfLbl.textContent=L['tf_'+currentTF.toLowerCase()]||L.tf_1m;
+  buildTicker();buildBreakdown();buildNews('all');buildNewsToolbar();
+}
+
+function setLang(code,btn){
+  document.querySelectorAll('.lb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  lang=code;
+  applyLang();
+}
+
+function setTF(tf,btn){
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  currentTF=tf;
+  const L=T[lang]||T.EN;
+  const tfLbl=document.getElementById('tf-label');
+  if(tfLbl) tfLbl.textContent=L['tf_'+tf.toLowerCase()]||L.tf_1m;
+  buildSine();
+}
+
+function tab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+function buildTicker(){
+  const L=T[lang]||T.EN;
+  const items=L.ticker||T.EN.ticker;
+  const srcs=['BLOOMBERG','REUTERS','COINDESK','BLOOMBERG','REUTERS','COINDESK','BLOOMBERG','REUTERS'];
+  const cols=['var(--bb)','var(--re)','var(--cd)','var(--bb)','var(--re)','var(--cd)','var(--gold)','var(--silver)'];
+  let h='';
+  for(let p=0;p<2;p++) items.forEach((t,i)=>{
+    h+=`<div class="ti"><div class="ti-d" style="background:${cols[i%8]}"></div><span class="ti-s" style="color:${cols[i%8]}">${srcs[i%8]}</span><span>${t}</span></div>`;
+  });
+  document.getElementById('ticker').innerHTML=h;
+}
+
+function buildPrices(){
+  document.getElementById('prices').innerHTML=PRICES.map(p=>{
+    const sp=genSpark(p.up);
+    return`<div class="pr"><span class="ps">${p.sym}</span><div class="prr">${sp}<span class="pv" style="color:${p.c}">${p.fmt}</span><span class="pc ${p.up?'up':'dn'}" id="pc-${p.sym.replace(/\W/g,'')}">${p.up?'+':''}${p.chg}%</span></div></div>`;
+  }).join('');
+}
+
+function genSpark(up){
+  const v=Array.from({length:8},(_,i)=>3+Math.random()*14+(up?i*1.1:-i*0.9+9));
+  const mx=Math.max(...v),mn=Math.min(...v);
+  return`<div class="spk">`+v.map(x=>{
+    const h=Math.round(3+(x-mn)/(mx-mn)*13);
+    return`<div class="sb" style="height:${h}px;background:${up?'var(--green)':'var(--red)'};opacity:${0.3+(x-mn)/(mx-mn)*0.7}"></div>`;
+  }).join('')+'</div>';
+}
+
+function buildISO(){
+  document.getElementById('iso-grid').innerHTML=ISO.map(c=>`
+    <div class="ic"><div class="is" style="background:${c.c}"></div><div class="ib">ISO 20022 ✓</div><div class="isc" style="color:${c.c}">${c.sym}</div><div class="in">${c.name}</div><div class="ip" style="color:${c.c}">${c.price}</div><div class="iu">${c.use}</div></div>`).join('');
+  document.getElementById('iso-prices').innerHTML=ISO.map(c=>`
+    <div class="pr"><span class="ps">${c.sym}</span><div class="prr"><span class="pv" style="color:${c.c}">${c.price}</span><span style="font-size:7px;font-weight:800;padding:2px 7px;border-radius:4px;background:rgba(34,211,165,.1);color:var(--green);border:1px solid rgba(34,211,165,.25)">ISO ✓</span></div></div>`).join('');
+}
+
+function buildStruct(){
+  document.getElementById('struct').innerHTML=STRUCT.map(s=>`
+    <div class="sr"><div class="st"><span class="sy" style="color:${s.c}">${s.sym}</span><span class="sp2">Support / Mid / Resistance</span></div><div class="sbar"><div class="ss" style="flex:1;background:rgba(61,85,112,.28)"></div><div class="ss" style="flex:1.3;background:${s.c}"></div><div class="ss" style="flex:1;background:rgba(167,139,250,.22)"></div></div><div class="sp2">${s.p}</div></div>`).join('');
+}
+
+function buildWave(){
+  document.getElementById('wave').innerHTML=WAVES.map(w=>`<div class="wr"><span class="ws">${w.sym}</span><span class="wv" style="color:${w.c}">${w.v}</span></div>`).join('');
+}
+
+function buildZone(){
+  document.getElementById('zone').innerHTML=ZONES.map(z=>`<div class="zc"><div class="zs">${z.sym}</div><div class="zl">${z.l[0]}</div><div class="zl">${z.l[1]}</div><div class="zi">${z.l[2]}</div></div>`).join('');
+}
+
+function buildDraw(){
+  document.getElementById('draw').innerHTML=DRAW.map(d=>`<div class="dg"><div class="dbs"><div class="db" style="height:${d.b}px;background:var(--btc)"></div><div class="db" style="height:${d.x}px;background:var(--xrp)"></div><div class="db" style="height:${d.s}px;background:var(--sp)"></div></div><div class="dl">${d.p}</div></div>`).join('');
+}
+
+function buildBreakdown(){
+  const L=T[lang]||T.EN;
+  document.getElementById('breakdown-area').innerHTML=BREAKDOWN.map(b=>{
+    const up=b.dir>0,c=up?'var(--green)':'var(--red)',bc=up?'rgba(34,211,165,.3)':'rgba(255,93,108,.3)',bg=up?'rgba(34,211,165,.12)':'rgba(255,93,108,.12)';
+    return`<div class="bkr"><div class="bkh"><span class="bkn">${b.n}</span><div class="bkg"><span class="bkb" style="background:${bg};color:${c};border:1px solid ${bc}">${up?'▲':'▼'} ${b.score}</span><span class="bkp">${b.w}</span></div></div><div style="height:3px;background:rgba(61,85,112,.15);border-radius:2px;margin-bottom:3px;overflow:hidden"><div style="width:${b.score}%;height:100%;background:${c};border-radius:2px"></div></div></div>`;
+  }).join('');
+}
+
+function buildPortfolio(){
+  document.getElementById('pf-grid').innerHTML=PF.map(p=>`
+    <div class="pfc"><div class="pfs" style="color:${p.c}">${p.sym}</div><div class="pfa">${p.alloc}% Allocation</div><div class="pc ${p.up?'up':'dn'}">${p.chg}</div><div class="pfb"><div class="pfbf" style="width:${p.alloc*3.3}%;background:${p.c}"></div></div></div>`).join('');
+}
+
+function buildSine(){
+  const cfg=TF_CONFIG[currentTF]||TF_CONFIG['1M'];
+  const svg=document.getElementById('sine');
+  const W=320,H=130,cY=H/2;
+  const curves=[
+    {...cfg.btc,off:Math.PI*0.32,c:'var(--btc)',r:4},
+    {...cfg.xrp,off:Math.PI*0.26,c:'var(--xrp)',r:4},
+    {...cfg.sp,off:Math.PI*0.12,c:'var(--sp)',r:3},
+    {...cfg.gold,off:Math.PI*0.20,c:'var(--gold)',r:3},
+  ];
+  let h='';
+  // Grid
+  for(let i=0;i<5;i++){const y=15+i*(H-30)/4;h+=`<line x1="18" y1="${y}" x2="${W-4}" y2="${y}" stroke="#16202f" stroke-width="1"/>`;}
+  // Vertical phase markers
+  for(let i=0;i<5;i++){const x=18+i*(W-22)/4;h+=`<line x1="${x}" y1="14" x2="${x}" y2="${H-14}" stroke="#16202f" stroke-width="0.5" stroke-dasharray="2,2"/>`;}
+  curves.forEach(cv=>{
+    let d='';
+    for(let i=0;i<=80;i++){
+      const t=i/80,x=18+t*(W-22),a=t*Math.PI*2-Math.PI/2+cv.off,y=cY-Math.sin(a)*(H/2-15)*cv.amp;
+      d+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1);
+    }
+    const cx=18+cv.ph*(W-22),ca=cv.ph*Math.PI*2-Math.PI/2+cv.off,cy=cY-Math.sin(ca)*(H/2-15)*cv.amp;
+    h+=`<path d="${d}" fill="none" stroke="${cv.c}" stroke-width="1.8" opacity="0.88"/><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${cv.r+5}" fill="${cv.c}" opacity="0.15"/><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${cv.r}" fill="${cv.c}"/>`;
+  });
+  svg.innerHTML=h;
+}
+
+function buildNewsToolbar(){
+  const L=T[lang]||T.EN;
+  const chips=L.news_chips||T.EN.news_chips;
+  const filters=['all','bb','re','cd','sec','btcf','isof','gold','silver'];
+  const cls=['a-all','a-bb','a-re','a-cd','a-tag','a-tag','a-tag','a-tag','a-tag'];
+  document.getElementById('ntb').innerHTML=chips.map((c,i)=>`<button class="nc${i===0?' '+cls[i]:''}" onclick="filterNews('${filters[i]}',this,'${cls[i]}')">${c}</button>`).join('');
+}
+
+function buildNews(filter){
+  const L=T[lang]||T.EN;
+  const data=L.news_data||T.EN.news_data;
+  const cls={'h':'ih','m':'im','l':'il'};
+  const impMap={'h':L.imp_h,'m':L.imp_m,'l':L.imp_l};
+  const srcCls={'bb':'s-bb','re':'s-re','cd':'s-cd'};
+  const srcN={'bb':'BLOOMBERG','re':'REUTERS','cd':'COINDESK'};
+  const filtered=data.filter(n=>{
+    if(filter==='all')return true;
+    if(['bb','re','cd'].includes(filter))return n.src===filter;
+    if(filter==='sec')return n.tags.includes('SEC XRP');
+    if(filter==='btcf')return n.tags.includes('BTC');
+    if(filter==='isof')return n.tags.includes('ISO 20022');
+    if(filter==='gold')return n.tags.includes('Gold');
+    if(filter==='silver')return n.tags.includes('Silver');
+    return true;
+  });
+  document.getElementById('news-list').innerHTML=filtered.map(n=>`
+    <div class="ni">
+      <div class="nm"><span class="nsrc ${srcCls[n.src]}">${srcN[n.src]}</span>${n.tags.map(t=>`<span class="ntag">${t}</span>`).join('')}<span class="ntime">${n.time}</span></div>
+      <div class="nh">${n.h}</div><div class="nsum">${n.s}</div>
+      <div class="nft"><span class="nimp ${cls[n.imp]}">IMPACT: ${impMap[n.imp]}</span></div>
+    </div>`).join('');
+}
+
+function filterNews(f,btn,cls){
+  document.querySelectorAll('.nc').forEach(c=>c.className='nc');
+  btn.className=`nc ${cls}`;
+  buildNews(f);
+}
+
+// ═══════════════════════════════════════════════════
+//  CLOCK / LIVE / TOASTS
+// ═══════════════════════════════════════════════════
+let cdSec=30;
+function tick(){
+  const n=new Date(),ts=n.toLocaleTimeString();
+  document.getElementById('clock').textContent=ts;
+  const u=document.getElementById('upd');if(u)u.textContent=ts;
+  cdSec--;
+  const c=document.getElementById('cd');if(c)c.textContent=cdSec;
+  if(cdSec<=0){cdSec=30;liveUpd();}
+}
+
+// ═══════════════════════════════════════════════════
+//  LIVE DATA · obfuscated credentials
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  API PROXY CONFIG
+//  ↓ ↓ ↓  REPLACE WITH YOUR CLOUDFLARE WORKER URL  ↓ ↓ ↓
+const WORKER_URL='https://picycleanalyzer.musicsocietyrecordsswiss.workers.dev';
+//  ↑ ↑ ↑  REPLACE WITH YOUR CLOUDFLARE WORKER URL  ↑ ↑ ↑
+// All API keys are stored as encrypted env vars on the worker.
+// No keys live in this file. See README.md for setup.
+// ═══════════════════════════════════════════════════
+const _M={'bitcoin':'BTC','ripple':'XRP','solana':'SOL','stellar':'XLM','hedera-hashgraph':'HBAR','xdce-crowd-sale':'XDC','algorand':'ALGO','quant-network':'QNT'};
+const _IDS=Object.keys(_M).join(',');
+
+let dataStatus={crypto:'loading',cycle:'loading',phase:null,piRatio:null,btcPrice:null,btcATH:null,btcLow:null,drawdown:null};
+
+function fmtPrice(v){
+  if(v>=1000) return '$'+v.toLocaleString('en-US',{maximumFractionDigits:0});
+  if(v>=10) return '$'+v.toFixed(2);
+  return '$'+v.toFixed(4);
+}
+
+async function liveUpd(){
+  try{
+    const r=await fetch(`${WORKER_URL}/api/cg-markets?ids=${_IDS}`);
+    if(!r.ok) throw new Error('http '+r.status);
+    const d=await r.json();
+    d.forEach(coin=>{
+      const sym=_M[coin.id];if(!sym) return;
+      const p=PRICES.find(x=>x.sym===sym);if(!p) return;
+      p.fmt=fmtPrice(coin.current_price);
+      p.chg=parseFloat((coin.price_change_percentage_24h||0).toFixed(2));
+      p.up=p.chg>=0;
+    });
+    buildPrices();
+    dataStatus.crypto='live';
+    updateLiveBadge();
+  }catch(e){
+    dataStatus.crypto='offline';
+    updateLiveBadge();
+  }
+}
+
+// Pi Cycle MA Indicator + Bull/Bear Phase Detection from REAL BTC history
+async function fetchCycleData(){
+  try{
+    const r=await fetch(`${WORKER_URL}/api/cg-btc-history`);
+    if(!r.ok) throw new Error('http '+r.status);
+    const d=await r.json();
+    const prices=d.prices.map(p=>p[1]);
+    const N=prices.length;
+    if(N<150) throw new Error('insufficient history');
+
+    const sma=(arr,period,idx)=>{
+      if(idx<period-1) return null;
+      let s=0;for(let i=idx-period+1;i<=idx;i++) s+=arr[i];
+      return s/period;
+    };
+
+    const ma111=sma(prices,111,N-1);
+    // Free CoinGecko gives 365 days max, so we use 350 if available else max possible
+    const period350=Math.min(350,N-1);
+    const ma350=sma(prices,period350,N-1);
+    const ma350x2=ma350?ma350*2:null;
+    const cur=prices[N-1];
+    const ath=Math.max(...prices);
+    const atl=Math.min(...prices);
+    const drawdown=((ath-cur)/ath)*100;
+    const gainFromLow=((cur-atl)/atl)*100;
+
+    let piPercent=null;
+    if(ma111&&ma350x2) piPercent=(ma111/ma350x2)*100;
+
+    // Phase detection
+    let phase='neutral',phaseLbl='NEUTRAL',phaseClr='var(--bb)',phaseIco='⚖';
+    if(piPercent!==null){
+      if(piPercent>=98){phase='top';phaseLbl='CYCLE TOP SIGNAL';phaseClr='var(--red)';phaseIco='🚨';}
+      else if(drawdown<15&&gainFromLow>50){phase='bull';phaseLbl='BULL MARKET';phaseClr='var(--green)';phaseIco='🐂';}
+      else if(drawdown>40){phase='bear';phaseLbl='BEAR MARKET';phaseClr='var(--red)';phaseIco='🐻';}
+      else if(drawdown>20){phase='correction';phaseLbl='CORRECTION';phaseClr='var(--bb)';phaseIco='⚠';}
+      else{phase='bull';phaseLbl='BULL MARKET';phaseClr='var(--green)';phaseIco='🐂';}
+    }
+
+    dataStatus.cycle='live';
+    dataStatus.phase=phase;
+    dataStatus.phaseLbl=phaseLbl;
+    dataStatus.phaseClr=phaseClr;
+    dataStatus.phaseIco=phaseIco;
+    dataStatus.piRatio=piPercent;
+    dataStatus.btcPrice=cur;
+    dataStatus.btcATH=ath;
+    dataStatus.btcLow=atl;
+    dataStatus.drawdown=drawdown;
+    dataStatus.gainFromLow=gainFromLow;
+
+    renderCycleData();
+    updateLiveBadge();
+  }catch(e){
+    dataStatus.cycle='offline';
+    updateLiveBadge();
+  }
+}
+
+function renderCycleData(){
+  // Update Pi Score bar
+  if(dataStatus.piRatio!==null){
+    const sc=Math.round(dataStatus.piRatio);
+    const scoreEl=document.querySelector('.bar-w .bv');
+    if(scoreEl) scoreEl.textContent=sc+'/100';
+    const barEl=document.querySelector('.card.gg .bb2 .bf');
+    if(barEl) barEl.style.width=sc+'%';
+  }
+  // Update phase pills + Wave Guide phase
+  if(dataStatus.phase){
+    const phaseHTML=`<div class="pill bull" style="background:${dataStatus.phaseClr==='var(--green)'?'rgba(34,211,165,.1)':'rgba(245,158,11,.1)'};border-color:${dataStatus.phaseClr};color:${dataStatus.phaseClr};box-shadow:0 0 18px ${dataStatus.phaseClr}40">${dataStatus.phaseIco} ${dataStatus.phaseLbl}</div>`;
+    const wgPhaseEl=document.querySelector('#sec-waves .pill.bull');
+    if(wgPhaseEl){
+      wgPhaseEl.innerHTML=`${dataStatus.phaseIco} ${dataStatus.phaseLbl}`;
+      wgPhaseEl.style.borderColor=dataStatus.phaseClr;
+      wgPhaseEl.style.color=dataStatus.phaseClr;
+    }
+  }
+  // BTC card MA ratio update
+  if(dataStatus.piRatio!==null){
+    const btcBars=document.querySelectorAll('#sec-btc .bb2 .bf');
+    btcBars.forEach(b=>{if(b.classList.contains('g'))b.style.width=dataStatus.piRatio.toFixed(1)+'%'});
+    const btcPctEl=document.querySelector('#sec-btc .bv');
+    if(btcPctEl) btcPctEl.textContent=dataStatus.piRatio.toFixed(1)+'%';
+  }
+  // BTC price display
+  if(dataStatus.btcPrice){
+    const btcCpb=document.querySelector('#sec-btc .cpb');
+    if(btcCpb) btcCpb.textContent=fmtPrice(dataStatus.btcPrice);
+  }
+}
+
+function updateLiveBadge(){
+  const lbl=document.getElementById('live-lbl');
+  if(!lbl) return;
+  const L=T[lang]||T.EN;
+  const allLive=dataStatus.crypto==='live'&&dataStatus.cycle==='live'&&dataStatus.metals!=='offline';
+  const anyOff=dataStatus.crypto==='offline'||dataStatus.cycle==='offline'||dataStatus.metals==='offline';
+  if(allLive){
+    lbl.textContent=L.live||'LIVE';
+    lbl.style.color='var(--green)';
+  }else if(anyOff){
+    lbl.textContent='OFFLINE';
+    lbl.style.color='var(--red)';
+  }else{
+    lbl.textContent='LOADING';
+    lbl.style.color='var(--bb)';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  METALS LIVE DATA (via Cloudflare Worker)
+// ═══════════════════════════════════════════════════
+let _prevMetals={gold:null,silver:null};
+
+// Defensive parser: API field names vary (gold/Gold/XAU, price/value/usd...)
+function _extractMetalPrice(data,keys){
+  if(!data||typeof data!=='object') return null;
+  for(const k of keys){
+    if(data[k]!==undefined){
+      const v=data[k];
+      if(typeof v==='number') return v;
+      if(typeof v==='string'){const n=parseFloat(v);if(!isNaN(n)) return n;}
+      if(typeof v==='object'){
+        for(const sub of ['price','value','usd','USD','last','spot','ask','close']){
+          if(v[sub]!==undefined){
+            const n=typeof v[sub]==='number'?v[sub]:parseFloat(v[sub]);
+            if(!isNaN(n)) return n;
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+async function fetchMetalsPrices(){
+  try{
+    const r=await fetch(`${WORKER_URL}/api/metals`);
+    if(!r.ok) throw new Error('http '+r.status);
+    const d=await r.json();
+
+    // Try multiple possible field names
+    const goldRaw=_extractMetalPrice(d,['gold','Gold','XAU','xau','GOLD']);
+    const silverRaw=_extractMetalPrice(d,['silver','Silver','XAG','xag','SILVER']);
+    if(goldRaw===null||silverRaw===null){
+      // last-resort: scan all numeric values, gold is usually 1000-5000, silver 15-60
+      for(const [k,v] of Object.entries(d)){
+        const n=typeof v==='number'?v:parseFloat(v);
+        if(!isNaN(n)){
+          if(goldRaw===null && n>1500 && n<6000) dataStatus.gold=n;
+          else if(silverRaw===null && n>10 && n<100) dataStatus.silver=n;
+        }
+      }
+    }else{
+      dataStatus.gold=goldRaw;
+      dataStatus.silver=silverRaw;
+    }
+
+    if(dataStatus.gold&&dataStatus.silver){
+      // Compute 24h change relative to previous fetch (won't be true 24h until session running long)
+      // Better: just leave change static or use stored previous
+      const prevG=_prevMetals.gold,prevS=_prevMetals.silver;
+      const goldChg=prevG?((dataStatus.gold-prevG)/prevG)*100:0;
+      const silverChg=prevS?((dataStatus.silver-prevS)/prevS)*100:0;
+      _prevMetals.gold=dataStatus.gold;
+      _prevMetals.silver=dataStatus.silver;
+
+      // Update PRICES array
+      const g=PRICES.find(x=>x.sym==='Gold');
+      const s=PRICES.find(x=>x.sym==='XAG');
+      if(g){g.fmt=fmtPrice(dataStatus.gold);if(prevG){g.chg=parseFloat(goldChg.toFixed(2));g.up=g.chg>=0;}}
+      if(s){s.fmt=fmtPrice(dataStatus.silver);if(prevS){s.chg=parseFloat(silverChg.toFixed(2));s.up=s.chg>=0;}}
+
+      // Update gold detail card
+      const goldCpb=document.querySelector('#sec-gold .cpb');
+      if(goldCpb) goldCpb.textContent=fmtPrice(dataStatus.gold);
+      // Update silver detail card
+      const silverCpb=document.querySelector('#sec-silver .cpb');
+      if(silverCpb) silverCpb.textContent=fmtPrice(dataStatus.silver);
+
+      // Calculate live gold/silver ratio
+      const ratio=dataStatus.gold/dataStatus.silver;
+      dataStatus.gsRatio=ratio;
+      const ratioCells=document.querySelectorAll('#sec-silver .csv');
+      ratioCells.forEach(c=>{if(c.textContent.includes(':1')) c.textContent=ratio.toFixed(1)+':1';});
+
+      buildPrices();
+      dataStatus.metals='live';
+    }else{
+      dataStatus.metals='partial';
+    }
+    updateLiveBadge();
+  }catch(e){
+    dataStatus.metals='offline';
+    updateLiveBadge();
+  }
+}
+
+const SRCS=['BLOOMBERG','REUTERS','COINDESK'];
+const SICS=[['var(--bb)','📊'],['var(--re)','📡'],['var(--cd)','🪙']];
+let toastIdx=0;
+function showToast(){
+  const L=T[lang]||T.EN;
+  const pool=L.toasts||T.EN.toasts;
+  const msg=pool[toastIdx%pool.length];
+  const [c,ico]=SICS[toastIdx%3];
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<div class="t-ico">${ico}</div><div><div class="t-src" style="color:${c}">${SRCS[toastIdx%3]}</div><div class="t-msg">${msg}</div></div>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{el.style.animation='tout .3s ease forwards';setTimeout(()=>el.remove(),300);},4500);
+  toastIdx++;
+  setTimeout(showToast,15000+Math.random()*20000);
+}
+
+function buildWaveSVG(){
+  // BULL: 5-wave impulse going UP
+  const W=320,H=90;
+  // Wave 1: up to 25%, Wave 2: down to 18%, Wave 3: big up to 65%, Wave 4: down to 55%, Wave 5: up to 78%
+  const bullPts=[
+    [10,80],   // start (bottom)
+    [60,55],   // Wave 1 peak
+    [95,65],   // Wave 2 trough
+    [180,18],  // Wave 3 peak (highest impulse)
+    [220,32],  // Wave 4 trough
+    [290,8],   // Wave 5 peak (top)
+  ];
+  const bullLabels=['','1','2','3','4','5'];
+  let bullPath='M'+bullPts.map(p=>p.join(',')).join(' L');
+  let bullH=`<line x1="0" y1="80" x2="${W}" y2="80" stroke="rgba(34,211,165,.15)" stroke-width="1" stroke-dasharray="2,3"/>`;
+  bullH+=`<path d="${bullPath}" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  bullPts.forEach((p,i)=>{
+    if(i===0)return;
+    bullH+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="var(--green)"/>`;
+    bullH+=`<text x="${p[0]}" y="${p[1]-7}" fill="var(--green)" font-size="10" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">${bullLabels[i]}</text>`;
+  });
+  bullH+=`<text x="${W-5}" y="86" fill="var(--green)" font-size="7" font-weight="700" text-anchor="end" opacity="0.7">CYCLE TOP</text>`;
+  document.getElementById('bull-svg').innerHTML=bullH;
+
+  // BEAR: 3-wave correction going DOWN
+  const bearPts=[
+    [10,12],   // start (top)
+    [85,55],   // Wave A trough
+    [155,32],  // Wave B peak (bull trap)
+    [290,82],  // Wave C bottom (capitulation)
+  ];
+  const bearLabels=['','A','B','C'];
+  let bearPath='M'+bearPts.map(p=>p.join(',')).join(' L');
+  let bearH=`<line x1="0" y1="12" x2="${W}" y2="12" stroke="rgba(255,93,108,.15)" stroke-width="1" stroke-dasharray="2,3"/>`;
+  bearH+=`<path d="${bearPath}" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  bearPts.forEach((p,i)=>{
+    if(i===0)return;
+    bearH+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="var(--red)"/>`;
+    bearH+=`<text x="${p[0]}" y="${p[1]-7}" fill="var(--red)" font-size="10" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">${bearLabels[i]}</text>`;
+  });
+  bearH+=`<text x="5" y="9" fill="var(--red)" font-size="7" font-weight="700" opacity="0.7">CYCLE TOP</text>`;
+  bearH+=`<text x="${W-5}" y="${H-2}" fill="var(--red)" font-size="7" font-weight="700" text-anchor="end" opacity="0.7">CAPITULATION</text>`;
+  document.getElementById('bear-svg').innerHTML=bearH;
+}
+
+// INIT
+buildPrices();buildISO();buildStruct();buildWave();buildZone();buildDraw();buildBreakdown();buildPortfolio();buildSine();buildWaveSVG();
+applyLang();
+setInterval(tick,1000);tick();
+setTimeout(showToast,5000);
+
+// Real data: fetch on load + periodic refresh
+liveUpd();
+fetchCycleData();
+fetchMetalsPrices();
+setInterval(liveUpd,60000);
+setInterval(fetchCycleData,300000);
+setInterval(fetchMetalsPrices,300000);
+</script>
+</body>
+</html>
